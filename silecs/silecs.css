@@ -1,0 +1,16 @@
+@import url('../css/default.css');
+
+pre {
+	background-color: #F6EEEE;
+}
+
+td.bugid,
+td.bugtitle {
+	font-weight: bold;
+	font-size: 110%;
+}
+
+#webmaster-contact-information,
+#powered-by-mantisbt-logo {
+	display: none;
+}
