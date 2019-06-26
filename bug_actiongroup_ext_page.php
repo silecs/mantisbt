@@ -53,8 +53,6 @@ bug_group_action_init( $t_external_action );
 bug_group_action_print_top();
 ?>
 
-<br />
-
 <div id="action-group-div" class="form-container" >
 	<form method="post" action="bug_actiongroup_ext.php">
 		<?php echo form_security_field( $t_form_name ); ?>
@@ -72,8 +70,6 @@ bug_group_action_print_top();
 		</table>
 	</form>
 </div>
-
-<br />
 
 <?php
 bug_group_action_print_bug_list( $f_bug_arr );

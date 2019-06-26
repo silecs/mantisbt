@@ -48,7 +48,7 @@ html_meta_redirect( 'api_tokens_page.php' );
 html_page_top2();
 
 echo '<div align="center">';
-echo '<br /><br />' . sprintf( lang_get( 'api_token_revoked' ), string_display_line( $f_token_name ) ) . '<br /><br />';
+echo sprintf( lang_get( 'api_token_revoked' ), string_display_line( $f_token_name ) );
 print_bracket_link( 'api_tokens_page.php', lang_get( 'api_tokens_link' ) );
 echo '</div>';
 

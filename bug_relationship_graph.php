@@ -93,7 +93,6 @@ compress_enable();
 
 html_page_top( bug_format_summary( $f_bug_id, SUMMARY_CAPTION ) );
 ?>
-<br />
 
 <table class="width100" cellspacing="1">
 
@@ -184,8 +183,6 @@ html_page_top( bug_format_summary( $f_bug_id, SUMMARY_CAPTION ) );
 </tr>
 
 </table>
-
-<br />
 
 <?php
 $_GET['id'] = $f_bug_id;

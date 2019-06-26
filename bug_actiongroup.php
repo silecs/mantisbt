@@ -344,7 +344,7 @@ $t_redirect_url = 'view_all_bug_page.php';
 if( count( $t_failed_ids ) > 0 ) {
 	html_page_top();
 
-	echo '<div><br />';
+	echo '<div>';
 	echo '<table class="width75">';
 	$t_separator = lang_get( 'word_separator' );
 	foreach( $t_failed_ids as $t_id => $t_reason ) {
@@ -352,9 +352,9 @@ if( count( $t_failed_ids ) > 0 ) {
 		$t_summary = string_display_line( bug_get_field( $t_id, 'summary' ) );
 		printf( "<tr><td width=\"50%%\">%s%s</td><td>%s</td></tr>\n", $t_label, $t_summary, $t_reason );
 	}
-	echo '</table><br />';
+	echo '</table><div>';
 	print_bracket_link( $t_redirect_url, lang_get( 'proceed' ) );
-	echo '</div>';
+	echo '</div></div>';
 
 	html_page_bottom();
 } else {

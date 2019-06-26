@@ -69,8 +69,6 @@ html_page_top( bug_format_summary( $f_bug_id, SUMMARY_CAPTION ) );
 ?>
 
 <?php # Send reminder Form BEGIN ?>
-<br />
-
 <div id="send-reminder-div" class="form-container">
 	<form method="post" action="bug_reminder.php">
 		<fieldset>
@@ -126,7 +124,7 @@ html_page_top( bug_format_summary( $f_bug_id, SUMMARY_CAPTION ) );
 	}
 
 	if( mention_enabled() ) {
-		echo '<br /><br />', sprintf( lang_get( 'reminder_mentions' ), '<strong>' . mentions_tag() . user_get_field( auth_get_current_user_id(), 'username' ) . '</strong>' );
+		echo sprintf( lang_get( 'reminder_mentions' ), '<strong>' . mentions_tag() . user_get_field( auth_get_current_user_id(), 'username' ) . '</strong>' );
 	}
 ?>
 			</span>
@@ -139,7 +137,6 @@ html_page_top( bug_format_summary( $f_bug_id, SUMMARY_CAPTION ) );
 	</form>
 </div>
 
-<br />
 <?php
 $_GET['id'] = $f_bug_id;
 $t_fields_config_option = 'bug_view_page_fields';

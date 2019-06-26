@@ -53,7 +53,7 @@ if( OFF == config_get( 'time_tracking_enabled' ) ) {
 }
 ?>
 
-<a id="bugnotestats"></a><br />
+<a id="bugnotestats"></a>
 
 <?php
 collapse_open( 'bugnotestats' );
@@ -140,7 +140,6 @@ $f_get_bugnote_stats_button = gpc_get_string( 'get_bugnote_stats_button', '' );
 		array_multisort( $t_sort_name, $t_bugnote_stats );
 		unset( $t_sort_name );
 ?>
-<br />
 <table class="width100" cellspacing="0">
 	<tr class="row-category-history">
 		<td class="small-caption">

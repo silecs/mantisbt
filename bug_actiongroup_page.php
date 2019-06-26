@@ -234,8 +234,6 @@ if( $t_multiple_projects ) {
 }
 ?>
 
-<br />
-
 <div id="action-group-div" class="form-container">
 	<form method="post" action="bug_actiongroup.php">
 		<?php echo form_security_field( $t_form_name ); ?>
@@ -404,8 +402,6 @@ if( $t_multiple_projects ) {
 
 	</form>
 </div>
-
-<br />
 
 <?php
 bug_group_action_print_bug_list( $f_bug_arr );

@@ -132,7 +132,6 @@ html_page_top( bug_format_summary( $f_bug_id, SUMMARY_CAPTION ) );
 print_recently_visited();
 ?>
 
-<br />
 <div id="bug-change-status-div" class="form-container">
 
 <h2><?php echo lang_get( $t_status_label . '_bug_title' ); ?></h2>
@@ -406,8 +405,6 @@ print_recently_visited();
 </fieldset>
 </form>
 </div>
-
-<br>
 
 <?php
 define( 'BUG_VIEW_INC_ALLOW', true );

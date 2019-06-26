@@ -51,7 +51,7 @@ require_api( 'string_api.php' );
 require_api( 'utility_api.php' );
 
 ?>
-<a id="bugnotestats"></a><br />
+<a id="bugnotestats"></a>
 <?php
 collapse_open( 'bugnotestats' );
 
@@ -145,6 +145,7 @@ if( ON == config_get( 'time_tracking_with_billing' ) ) {
 
 <?php
 	if( !is_blank( $f_get_bugnote_stats_button ) ) {
+		echo "<div>";
 		# Retrieve time tracking information
 		$t_from = $t_bugnote_stats_from_y . '-' . $t_bugnote_stats_from_m . '-' . $t_bugnote_stats_from_d;
 		$t_to = $t_bugnote_stats_to_y . '-' . $t_bugnote_stats_to_m . '-' . $t_bugnote_stats_to_d;
@@ -161,8 +162,6 @@ if( ON == config_get( 'time_tracking_with_billing' ) ) {
 			$t_cost_col = false;
 		}
 
-		echo '<br />';
-
 		$t_exports = array(
 			'csv_export' => 'billing_export_to_csv.php',
 			'excel_export' => 'billing_export_to_excel.php',
@@ -175,11 +174,9 @@ if( ON == config_get( 'time_tracking_with_billing' ) ) {
 			echo '&amp;project_id=' . $f_project_id;
 			echo '">' . lang_get( $t_export_label ) . '</a> ] ';
 		}
-
-		echo '<br />';
+		echo "</div>";
 
 ?>
-<br />
 <table class="width100" cellspacing="0">
 	<tr class="row-category2">
 		<td class="small-caption bold">
@@ -236,8 +233,6 @@ if( ON == config_get( 'time_tracking_with_billing' ) ) {
 	</tr>
 </table>
 
-<br />
-<br />
 
 <table class="width100" cellspacing="0">
 	<tr class="row-category2">

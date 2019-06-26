@@ -53,7 +53,7 @@ require_api( 'lang_api.php' );
 <?php if( ( !bug_is_readonly( $f_bug_id ) ) &&
 		( access_has_bug_level( config_get( 'add_bugnote_threshold' ), $f_bug_id ) ) ) { ?>
 <?php # Bugnote Add Form BEGIN ?>
-<a id="addbugnote"></a> <br />
+<a id="addbugnote"></a>
 
 <?php
 	collapse_open( 'bugnote_add', '', 'form-container' );

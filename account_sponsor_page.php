@@ -94,7 +94,6 @@ html_page_top( lang_get( 'my_sponsorship' ) );
 
 $t_project = helper_get_current_project();
 ?>
-<br />
 <table class="width100" cellspacing="1">
 <tr>
 	<td class="form-title">
@@ -134,7 +133,6 @@ if( $t_sponsor_count === 0 ) {
 ?>
 
 <!-- # Edit own sponsorship Form BEGIN -->
-<br />
 <div>
 <table class="width100" cellspacing="1">
 	<colgroup>
@@ -260,7 +258,6 @@ if( $t_sponsor_count === 0 ) {
 ?>
 
 <!-- # Edit sponsorship Form BEGIN -->
-<br />
 <div>
 <form method="post" action="account_sponsor_update.php">
 <?php echo form_security_field( 'account_sponsor_update' ) ?>
@@ -373,7 +370,6 @@ if( $t_sponsor_count === 0 ) {
 </div>
 <?php } # end sponsored issues ?>
 
-<br />
 <div>
 <?php
 html_button( 'account_sponsor_page.php',

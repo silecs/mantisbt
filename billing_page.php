@@ -43,8 +43,6 @@ billing_ensure_reporting_access();
 html_page_top( lang_get( 'time_tracking_billing_link' ) );
 ?>
 
-<br />
-
 <?php
 # Work break-down
 define( 'BILLING_INC_ALLOW', true );

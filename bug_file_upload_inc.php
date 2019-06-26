@@ -49,7 +49,6 @@ if( !file_allow_bug_upload( $f_bug_id ) ) {
 
 $t_max_file_size = (int)min( ini_get_number( 'upload_max_filesize' ), ini_get_number( 'post_max_size' ), config_get( 'max_file_size' ) );
 ?>
-<br />
 
 <?php
 	collapse_open( 'upload_form' );
@@ -67,8 +66,7 @@ $t_max_file_size = (int)min( ini_get_number( 'upload_max_filesize' ), ini_get_nu
 </tr>
 <tr class="row-1">
 	<td class="category" width="15%">
-		<?php echo lang_get( $t_file_upload_max_num == 1 ? 'select_file' : 'select_files' ) ?>
-		<br />
+		<div><?php echo lang_get( $t_file_upload_max_num == 1 ? 'select_file' : 'select_files' ) ?></div>
 		<?php print_max_filesize( $t_max_file_size ); ?>
 	</td>
 	<td width="85%">

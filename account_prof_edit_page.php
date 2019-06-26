@@ -78,7 +78,6 @@ if( profile_is_global( $f_profile_id ) ) {
 ?>
 
 <?php # Edit Profile Form BEGIN ?>
-<br />
 <div class="form-container">
 
 <h2><?php echo lang_get( 'edit_profile_title' ) ?></h2>
