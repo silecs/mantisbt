@@ -1,5 +1,15 @@
 @import url('../css/default.css');
 
+#logo-image {
+	max-height: 40px;
+}
+
+#mantis > .info-bar {
+	clear: right;
+	position: inherit;
+	float: none;
+}
+
 pre {
 	background-color: #F6EEEE;
 }
