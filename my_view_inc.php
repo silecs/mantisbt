@@ -351,8 +351,6 @@ for( $i = 0;$i < $t_count; $i++ ) {
 		<?php
 			print_bug_link( $t_bug->id );
 
-			echo '<br />';
-
 			if( !bug_is_readonly( $t_bug->id ) && access_has_bug_level( $t_update_bug_threshold, $t_bug->id ) ) {
 				echo '<a class="edit" href="' . string_get_bug_update_url( $t_bug->id ) . '"><img src="' . $t_icon_path . 'update.png' . '" alt="' . lang_get( 'update_bug_button' ) . '" /></a>';
 			}
@@ -384,7 +382,7 @@ for( $i = 0;$i < $t_count; $i++ ) {
 		 	if( ON == config_get( 'show_bug_project_links' ) && helper_get_current_project() != $t_bug->project_id ) {
 				echo '<span class="small project">[', string_display_line( project_get_name( $t_bug->project_id ) ), '] </span>';
 			}
-			echo '<span class="small summary">' . $t_summary . '</span><br />';
+			echo '<div class="small summary">' . $t_summary . '</div>';
 	?>
 		<?php
 	# type project name if viewing 'all projects' or bug is in subproject

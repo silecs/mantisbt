@@ -237,7 +237,6 @@ $t_links = event_signal( 'EVENT_MENU_ISSUE', $f_bug_id );
 # Start of Template
 #
 
-echo '<br />';
 echo '<div id="view-issue-details" class="table-container">';
 echo '<table>';
 echo '<thead><tr class="bug-nav">';

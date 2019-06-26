@@ -52,7 +52,7 @@ if( access_has_bug_level( config_get( 'show_monitor_list_threshold' ), $f_bug_id
 	$t_users = bug_get_monitors( $f_bug_id );
 	$t_num_users = sizeof( $t_users );
 
-	echo '<a id="monitors"></a><br />';
+	echo '<a id="monitors"></a>';
 
 	collapse_open( 'monitoring' );
 ?>
@@ -84,7 +84,6 @@ if( access_has_bug_level( config_get( 'show_monitor_list_threshold' ), $f_bug_id
 
 		if( access_has_bug_level( config_get( 'monitor_add_others_bug_threshold' ), $f_bug_id ) ) {
 ?>
-		<br /><br />
 		<form method="get" action="bug_monitor_add.php">
 		<?php echo form_security_field( 'bug_monitor_add' ) ?>
 			<input type="hidden" name="bug_id" value="<?php echo (integer)$f_bug_id; ?>" />

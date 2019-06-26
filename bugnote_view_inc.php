@@ -86,7 +86,7 @@ $t_num_notes = count( $t_bugnotes );
 ?>
 
 <?php # Bugnotes BEGIN ?>
-<a id="bugnotes"></a><br />
+<a id="bugnotes"></a>
 
 <?php
 	collapse_open( 'bugnotes' );
@@ -262,7 +262,7 @@ $t_num_notes = count( $t_bugnotes );
 		<?php
 			switch( $t_bugnote->note_type ) {
 				case REMINDER:
-					echo '<strong>';
+					echo '<div><strong>';
 
 					# List of recipients; remove surrounding delimiters
 					$t_recipients = trim( $t_bugnote->note_attr, '|' );
@@ -284,7 +284,7 @@ $t_num_notes = count( $t_bugnotes );
 							. ( $t_truncated ? ' (' . lang_get( 'reminder_list_truncated' ) . ')' : '' );
 					}
 
-					echo '</strong><br /><br />';
+					echo '</strong></div>';
 					break;
 
 				case TIME_TRACKING:
