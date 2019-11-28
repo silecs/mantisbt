@@ -24,3 +24,11 @@ td.bugtitle {
 #powered-by-mantisbt-logo {
 	display: none;
 }
+
+.blocks-container {
+	display: flex;
+}
+.block {
+	flex: auto;
+	padding: 0 1ex;
+}
