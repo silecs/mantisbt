@@ -51,6 +51,9 @@ require_api( 'string_api.php' );
 require_api( 'utility_api.php' );
 
 ?>
+
+<a href="/plugin.php?page=TimeAccount/status">Temps alloué</a>
+
 <a id="bugnotestats"></a>
 <?php
 collapse_open( 'bugnotestats' );
