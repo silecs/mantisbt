@@ -89,6 +89,12 @@ reset( $t_boxes );
 
 $t_project_id = helper_get_current_project();
 $t_timeline_view_threshold_access = access_has_project_level( config_get( 'timeline_view_threshold' ) );
+
+if ($t_project_id > 0) {
+	$t_row = project_get_row($t_project_id);
+	echo '<h1>' . htmlspecialchars($t_row['name']) . '</h1>';
+	echo '<div>' . string_display_links($t_row['description']) . '</div>';
+}
 ?>
 
 <div>

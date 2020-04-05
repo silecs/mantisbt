@@ -865,7 +865,9 @@ function print_menu() {
 			}
 		}
 
-		$t_versions = version_get_all_rows( $f_project_id, null, null );
+		if ($t_current_project > 0) {
+			$t_versions = version_get_all_rows( $t_current_project, null, null );
+		}
 
 		# My View
 		$t_menu_options[] = '<a href="' . helper_mantis_url( 'my_view_page.php">' ) . lang_get( 'my_view_link' ) . '</a>';
@@ -878,7 +880,7 @@ function print_menu() {
 			$t_menu_options[] = string_get_bug_report_link();
 		}
 
-		if( count( $t_versions ) > 0 ) {
+		if( !empty($t_versions) ) {
 			# Changelog Page
 			if( access_has_project_level( config_get( 'view_changelog_threshold' ) ) ) {
 				$t_menu_options[] = '<a href="' . helper_mantis_url( 'changelog_page.php">' ) . lang_get( 'changelog_link' ) . '</a>';
