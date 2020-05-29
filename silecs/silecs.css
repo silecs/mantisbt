@@ -1,4 +1,8 @@
 @import url('../css/default.css');
+h1.project {
+    font-size: large;
+    float: right;
+}
 
 #logo-image {
 	max-height: 40px;
@@ -20,6 +24,7 @@ td.bugtitle {
 	font-size: 110%;
 }
 
+#mantisbt-copyright,
 #webmaster-contact-information,
 #powered-by-mantisbt-logo {
 	display: none;
@@ -32,4 +37,19 @@ td.bugtitle {
 .block {
 	flex: auto;
 	padding: 0 1ex;
+}
+
+
+#filter-toggler {
+    float: right;
+    font-size: large;
+    padding: 2px 3px;
+}
+
+.stored-queries input[type="submit"] {
+    display: none;
+}
+
+.save-query, .manage-queries, .filter-links {
+    display: none;
 }
