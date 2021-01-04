@@ -16,6 +16,8 @@ h1.project {
 
 pre {
 	background-color: #F6EEEE;
+	max-width: 80vw;
+	overflow-x: auto;
 }
 
 td.bugid,
