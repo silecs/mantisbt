@@ -354,7 +354,7 @@ if( $t_show_id || $t_show_project || $t_show_category || $t_show_view_state || $
 	echo '<td class="bug-project">', $t_project_name, '</td>';
 
 	# Category
-	echo '<td class="bug-category">', $t_category, '</td>';
+	echo '<td class="bug-category"><a href="/view_bugs.php?f[category_id][]=', $t_category, '">', $t_category, '</a></td>';
 
 	# View Status
 	echo '<td class="bug-view-status">', $t_bug_view_state_enum, '</td>';

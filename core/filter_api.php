@@ -427,7 +427,7 @@ function filter_field_is_myself( $p_field_value ) {
  * @return integer
  */
 function filter_per_page( array $p_filter, $p_count, $p_per_page ) {
-	$p_per_page = (( null == $p_per_page ) ? (int)$p_filter[FILTER_PROPERTY_ISSUES_PER_PAGE] : $p_per_page );
+	$p_per_page = (( null == $p_per_page ) ? (int) ($p_filter[FILTER_PROPERTY_ISSUES_PER_PAGE] ?? 0) : $p_per_page );
 	$p_per_page = (( 0 == $p_per_page || -1 == $p_per_page ) ? $p_count : $p_per_page );
 
 	return (int)abs( $p_per_page );
