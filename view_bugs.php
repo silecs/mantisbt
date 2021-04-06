@@ -60,7 +60,11 @@ compress_enable();
 # don't index view issues pages
 html_robots_noindex();
 
-html_page_top1(lang_get('view_bugs_link'));
+if (count($filter) === 1 && !empty($filter['category_id'])) {
+    html_page_top1(join('+', $filter['category_id']));
+} else {
+    html_page_top1(lang_get('view_bugs_link'));
+}
 html_page_top2();
 
 
