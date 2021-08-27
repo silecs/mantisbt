@@ -1,3 +1,4 @@
+jQuery.fx.off = true;
 var begin_form = '';
 var form_fields = new Array();
 var serialized_form_fields = new Array();
