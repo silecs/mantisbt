@@ -154,7 +154,7 @@ if( ( $t_filter_position & FILTER_POSITION_TOP ) == FILTER_POSITION_TOP ) {
 
 <div class="widget-main no-padding">
 	<div class="table-responsive checkbox-range-selection">
-	<table id="buglist" class="table table-bordered table-condensed table-hover table-striped">
+	<table id="buglist" class="table table-bordered table-condensed table-hover">
 	<thead>
 <?php # -- Bug list column header row -- ?>
 <tr class="buglist-headers">
@@ -199,7 +199,7 @@ function write_bug_rows( array $p_rows ) {
 			$t_in_stickies = false;
 		}
 
-		echo '<tr>';
+		echo "<tr class=\"status-{$t_row->status}-bg\">";
 
 		$t_column_value_function = 'print_column_value';
 		foreach( $g_columns as $t_column ) {

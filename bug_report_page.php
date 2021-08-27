@@ -679,9 +679,9 @@ if( $t_show_attachments ) {
 			<?php print_dropzone_template() ?>
 			<input type="hidden" name="max_file_size" value="<?php echo $t_max_file_size ?>" />
 			<div class="dropzone center" <?php print_dropzone_form_data() ?>>
-				<?php print_icon( 'fa-cloud-upload', 'upload-icon ace-icon blue fa-3x' ); ?>
+				<?php print_icon( 'fa-cloud-upload', 'upload-icon ace-icon blue fa-2x' ); ?>
 				<br>
-				<span class="bigger-150 grey"><?php echo lang_get( 'dropzone_default_message' ) ?></span>
+				<span class="grey"><?php echo lang_get( 'dropzone_default_message' ) ?></span>
 				<div id="dropzone-previews-box" class="dropzone-previews dz-max-files-reached"></div>
 			</div>
 			<div class="fallback">
