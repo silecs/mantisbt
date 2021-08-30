@@ -6,6 +6,41 @@ pre {
 	overflow-x: auto;
 }
 
+.footer,
+#powered-by-mantisbt-logo {
+	display: none;
+}
+
+body > #main-container {
+	color: black;
+}
+
+body .btn-white.btn-primary {
+	color: royalblue !important;
+}
+
+body .dropzone {
+	min-height: 30px;
+	padding: 10px 20px;
+}
+.dropzone.dz-clickable * {
+	vertical-align: middle;
+}
+
+body .nav-recent { font-size: inherit; }
+
+#bugnotestats { display: none; }
+
+#buglist td a {
+	color: black;
+}
+
+pre {
+	background-color: #F6EEEE;
+	max-width: 80vw;
+	overflow-x: auto;
+}
+
 td.bugid,
 td.bugtitle {
 	font-weight: bold;
@@ -16,3 +51,38 @@ td.bugtitle {
 #powered-by-mantisbt-logo {
 	display: none;
 }
+
+#buglist .column-last-modified { white-space: nowrap; }
+#buglist .column-id {
+	font-weight: bold;
+	mix-blend-mode: multiply;
+}
+#buglist .column-id a {
+	color: royalblue;
+}
+
+/* Overwrite some settings */
+
+span.print {
+	font-size: 9pt;
+}
+span.required {
+	font-size: 9pt;
+}
+
+.small-caption	{
+    font-size: 9pt;
+}
+
+/* input was too dim */
+body input[type=url]:focus, body input[type=search]:focus, body input[type=tel]:focus, body input[type=color]:focus, body input[type=text]:focus, body input[type=password]:focus, body input[type=datetime]:focus, body input[type=datetime-local]:focus, body input[type=date]:focus, body input[type=month]:focus, body input[type=time]:focus, body input[type=week]:focus, body input[type=number]:focus, body input[type=email]:focus, textarea:focus,
+body textarea.form-control:focus, body select:focus
+{
+	color: black !important;
+}
+body input[type=url], body input[type=search], body input[type=tel], body input[type=color], body input[type=text], body input[type=password], body input[type=datetime], body input[type=datetime-local], body input[type=date], body input[type=month], body input[type=time], body input[type=week], body input[type=number], body input[type=email], textarea,
+body textarea.form-control, body select
+{
+	color: #404040 !important;
+}
+
