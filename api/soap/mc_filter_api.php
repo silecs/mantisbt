@@ -160,7 +160,7 @@ function mci_filter_delete( $p_filter_id ) {
  * @param string  $p_username    The name of the user trying to access the filters.
  * @param string  $p_password    The password of the user.
  * @param integer $p_project_id  The id of the project to retrieve filters for.
- * @param integer|string $p_filter_id The id of the filter to apply,
+ * @param mixed $p_filter_id The id of the filter to apply, a filter array,
  *                               or standard filter (see FILTER_STANDARD_* constants).
  * @param integer $p_page_number Start with the given page number (zero-based).
  * @param integer $p_per_page    Number of issues to display per page.
@@ -174,14 +174,19 @@ function mc_filter_get_issues( $p_username, $p_password, $p_project_id, $p_filte
 
 	$t_lang = mci_get_user_lang( $t_user_id );
 
-	if( !mci_has_readonly_access( $t_user_id, $p_project_id ) ) {
-		return mci_fault_access_denied( $t_user_id );
-	}
-
 	if( is_numeric( $p_filter_id ) ) {
 		$t_filter = filter_get( $p_filter_id );
-	} else {
+	} elseif (empty($p_filter_id) || is_string($p_filter_id)) {
 		$t_filter = filter_standard_get( $p_filter_id, $t_user_id, $p_project_id );
+	} else {
+		$t_filter = filter_ensure_valid_filter( $p_filter_id );
+		if (!empty($t_filter['project_id'])) {
+			$p_project_id = (int) $t_filter['project_id'][0];
+		}
+	}
+
+	if( !mci_has_readonly_access( $t_user_id, $p_project_id ) ) {
+		return mci_fault_access_denied( $t_user_id );
 	}
 
 	if( $t_filter === null ) {

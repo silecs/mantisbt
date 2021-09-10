@@ -113,9 +113,12 @@ function rest_issue_get( \Slim\Http\Request $p_request, \Slim\Http\Response $p_r
 			# set the current project to correctly account for user permissions
 			helper_set_current_project( $t_project_id );
 
+			$filter = $p_request->getParam('filter', []);
 			if( !empty( $t_filter_id ) ) {
 				$t_issues = mc_filter_get_issues(
 					'', '', $t_project_id, $t_filter_id, $t_page_number, $t_page_size );
+			} elseif ($filter) {
+				$t_issues = mc_filter_get_issues('', '', $t_project_id, $filter, $t_page_number, $t_page_size);
 			} else {
 				$t_issues = mc_filter_get_issues(
 					'', '', $t_project_id, FILTER_STANDARD_ANY, $t_page_number, $t_page_size );
