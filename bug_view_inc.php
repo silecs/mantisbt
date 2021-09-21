@@ -1065,7 +1065,7 @@ function bug_view_button_bug_change_status( BugData $p_bug ) {
 		$t_default = key( $t_enum_list );
 		ksort( $t_enum_list );
 
-		echo '<form method="post" action="bug_change_status_page.php" class="form-inline">';
+		echo '<form method="get" action="bug_change_status_page.php" class="form-inline">';
 		# CSRF protection not required here - form does not result in modifications
 
 		$t_button_text = lang_get( 'bug_status_to_button' );
