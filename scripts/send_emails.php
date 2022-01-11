@@ -36,8 +36,6 @@ if( php_sapi_name() != 'cli' ) {
 	exit( 1 );
 }
 
-echo "Sending emails...\n";
 email_send_all();
-echo "Done.\n";
 
 exit( 0 );
