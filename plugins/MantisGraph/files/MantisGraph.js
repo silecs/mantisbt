@@ -32,6 +32,25 @@ $(document).ready( function() {
                             beginAtZero: true
                         }
                     }]
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            const y = parseInt(tooltipItem.value);
+                            if (y === null) {
+                                return '';
+                            }
+                            if (y === 0) {
+                                return '-';
+                            }
+                            if (y < 60) {
+                                return ` ${context.parsed.y} minutes`;
+                            }
+                            const hours = Math.floor(y / 60);
+                            const minutes = y - 60 * hours;
+                            return ` ${hours} heures ${minutes} minutes`;
+                        }
+                    }
                 }
             }
         });
