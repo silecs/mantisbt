@@ -279,6 +279,11 @@ class MantisGraphPlugin extends MantisPlugin  {
 				'label' => plugin_lang_get( 'issue_trends_link' ),
 				'url' => $this->get_url_with_filter( 'issues_trend_graph.php' ),
 			),
+			'time_graph.php' => array(
+				'icon' => 'fa-bar-chart',
+				'label' => "Temps",
+				'url' => $this->get_url_with_filter( 'time_graph.php' ),
+			),
 		);
 
 		# Retrieve current page

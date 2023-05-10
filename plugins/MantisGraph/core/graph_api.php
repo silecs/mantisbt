@@ -564,6 +564,65 @@ function create_cumulative_bydate( array $p_filter = null ) {
 }
 
 /**
+ * @param array $p_filter Filter array.
+ * @return array with key being username and value being # of issues fixed.
+ */
+function create_time_summary( array $p_filter = null ) {
+	$t_project_id = helper_get_current_project();
+	$t_user_id = auth_get_current_user_id();
+	$t_specific_where = helper_project_specific_where( $t_project_id, $t_user_id );
+
+	$t_query = new DBQuery();
+	$t_sql = <<<EOSQL
+		SELECT FROM_UNIXTIME(n.date_submitted, '%Y-%m') AS yearmonth, sum(n.time_tracking) AS minutes
+		FROM bug
+			JOIN bugnote n ON n.bug_id = bug.id
+		WHERE $t_specific_where
+		GROUP BY yearmonth
+		EOSQL;
+	$t_query->sql( $t_sql );
+
+	$oldest = '';
+	$durations = [];
+	while( $t_row = $t_query->fetch() ) {
+		if ($oldest === '') {
+			$oldest = $t_row['yearmonth'];
+		}
+		$durations[$t_row['yearmonth']] = (int)$t_row['minutes'];
+	}
+	if (!$durations) {
+		return [];
+	}
+
+	$metrics = [];
+	$now = time();
+	$current = DateTime::createFromFormat('Y-m-d H:i', "{$oldest}-01 12:00");
+	$month = new DateInterval("P1M");
+	while ($current->getTimestamp() < $now) {
+		$strMonth = $current->format('Y-m');
+		$metrics[$strMonth] = $durations[$strMonth] ?? 0;
+		$current->add($month);
+	}
+
+	return $metrics;
+}
+
+function graph_bymonth( array $p_metrics ) {
+	static $s_id = 0;
+
+	$s_id++;
+	$t_json_labels = json_encode( array_keys( $p_metrics ) );
+	$t_json_values = json_encode( array_values( $p_metrics ) );
+?>
+	<canvas class="by-month"
+		width="1000" height="400"
+		data-labels="<?= htmlspecialchars( $t_json_labels, ENT_QUOTES ) ?>"
+		data-values="<?= htmlspecialchars( $t_json_values, ENT_QUOTES ) ?>">
+	</canvas>
+<?php
+}
+
+/**
  * Get formatted date string
  *
  * @param integer $p_date Date.

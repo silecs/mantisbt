@@ -6,6 +6,37 @@ $(document).ready( function() {
     // Default color scheme
     Chart.defaults.global.plugins.colorschemes.scheme = 'tableau.Classic20';
 
+    $("canvas.by-month").each( function() {
+        var type = 'bar';
+        new Chart( $(this), {
+            type: type,
+            data: {
+                labels: $(this).data('labels'),
+                datasets: [{
+                    label: 'temps consacré',
+                    data: $(this).data('values'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        position: 'bottom',
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 90
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    });
+
     $("canvas[id*='barchart']").each( function() {
         var type = this.id.substr(0,8) === 'barchart' ? 'bar' : 'horizontalBar';
         new Chart( $(this), {
