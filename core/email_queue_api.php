@@ -89,7 +89,7 @@ function email_queue_prepare_db( EmailData $p_email_data ) {
  * @param EmailData $p_email_data Email Data structure.
  * @return integer
  */
-function email_queue_add( EmailData $p_email_data ) {
+function email_queue_add( EmailData $p_email_data, $unique = '' ) {
 	$t_email_data = email_queue_prepare_db( $p_email_data );
 
 	# email cannot be blank
@@ -116,12 +116,18 @@ function email_queue_add( EmailData $p_email_data ) {
 	$c_body = db_mysql_fix_utf8( $t_email_data->body );
 	$c_metadata = serialize( $t_email_data->metadata );
 
+	if (!preg_match('/^\w+$/', $unique)) {
+		$unique = '';
+	} elseif ($unique !== '') {
+		db_query("DELETE FROM {email} WHERE `unique_key` = '$unique'");
+	}
+
 	db_param_push();
 	$t_query = 'INSERT INTO {email}
-				    ( email, subject, body, submitted, metadata)
-				  VALUES
-				    (' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ')';
-	db_query( $t_query, array( $c_email, $c_subject, $c_body, db_now(), $c_metadata ) );
+				    ( email, subject, body, submitted, metadata, unique_key)
+					  VALUES
+				    (' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ',' . db_param() . ')';
+	db_query( $t_query, array( $c_email, $c_subject, $c_body, db_now(), $c_metadata, $unique ) );
 	$t_id = db_insert_id( db_get_table( 'email' ), 'email_id' );
 
 	log_event( LOG_EMAIL_VERBOSE, sprintf( 'message %d queued', $t_id ) );

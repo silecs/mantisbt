@@ -533,7 +533,7 @@ function email_signup( $p_user_id, $p_confirm_hash, $p_admin_name = '' ) {
 	# Send signup email regardless of mail notification pref
 	# or else users won't be able to sign up
 	if( !is_blank( $t_email ) ) {
-		email_store( $t_email, $t_subject, $t_message, null, true );
+		email_store( $t_email, $t_subject, $t_message, [], true, '' );
 		log_event( LOG_EMAIL, 'Signup Email = %s, Hash = %s, User = @U%d', $t_email, $p_confirm_hash, $p_user_id );
 	}
 
@@ -585,7 +585,7 @@ function email_send_confirm_hash_url( $p_user_id, $p_confirm_hash, $p_reset_by_a
 	# Send password reset regardless of mail notification preferences
 	# or else users won't be able to receive their reset passwords
 	if( !is_blank( $t_email ) ) {
-		email_store( $t_email, $t_subject, $t_message, null, true );
+		email_store( $t_email, $t_subject, $t_message, [], true, '' );
 		log_event( LOG_EMAIL, 'Password reset for user @U%d sent to %s', $p_user_id, $t_email );
 	} else {
 		log_event( LOG_EMAIL, 'Password reset for user @U%d not sent, email is empty', $p_user_id );
@@ -618,7 +618,7 @@ function email_notify_new_account( $p_username, $p_email ) {
 		$t_message = lang_get( 'new_account_signup_msg' ) . "\n\n" . lang_get( 'new_account_username' ) . ' ' . $p_username . "\n" . lang_get( 'new_account_email' ) . ' ' . $p_email . "\n" . lang_get( 'new_account_IP' ) . ' ' . $_SERVER['REMOTE_ADDR'] . "\n" . config_get_global( 'path' ) . "\n\n" . lang_get( 'new_account_do_not_reply' );
 
 		if( !is_blank( $t_recipient_email ) ) {
-			email_store( $t_recipient_email, $t_subject, $t_message );
+			email_store( $t_recipient_email, $t_subject, $t_message, [], false, '' );
 			log_event( LOG_EMAIL, 'New Account Notify for email = \'%s\'', $t_recipient_email );
 		}
 
@@ -1044,7 +1044,7 @@ function email_bugnote_add( $p_bugnote_id, $p_files = array(), $p_exclude_user_i
 
 		$t_contents = $t_message . "\n";
 
-		email_store( $t_user_email, $t_subject, $t_contents );
+		email_store( $t_user_email, $t_subject, $t_contents, [], false, '' );
 
 		log_event( LOG_EMAIL_VERBOSE, 'queued bugnote email for note ~' . $p_bugnote_id .
 			' issue #' . $t_bugnote->bug_id . ' by U' . $t_user_id );
@@ -1159,7 +1159,7 @@ function email_bug_deleted( $p_bug_id ) {
  *                             even when using cronjob
  * @return integer|null
  */
-function email_store( $p_recipient, $p_subject, $p_message, array $p_headers = null, $p_force = false ) {
+function email_store( $p_recipient, $p_subject, $p_message, array $p_headers, $p_force, $unique ) {
 	global $g_email_shutdown_processing;
 
 	$t_recipient = trim( $p_recipient );
@@ -1178,7 +1178,7 @@ function email_store( $p_recipient, $p_subject, $p_message, array $p_headers = n
 	$t_email_data->subject = $t_subject;
 	$t_email_data->body = $t_message;
 	$t_email_data->metadata = array();
-	$t_email_data->metadata['headers'] = $p_headers === null ? array() : $p_headers;
+	$t_email_data->metadata['headers'] = $p_headers;
 
 	# Urgent = 1, Not Urgent = 5, Disable = 0
 	$t_email_data->metadata['charset'] = 'utf-8';
@@ -1194,7 +1194,7 @@ function email_store( $p_recipient, $p_subject, $p_message, array $p_headers = n
 	}
 	$t_email_data->metadata['hostname'] = $t_hostname;
 
-	$t_email_id = email_queue_add( $t_email_data );
+	$t_email_id = email_queue_add( $t_email_data, $unique );
 
 	# Set the email processing flag for the shutdown function
 	$g_email_shutdown_processing |= EMAIL_SHUTDOWN_GENERATED;
@@ -1534,7 +1534,7 @@ function email_bug_reminder( $p_recipients, $p_bug_id, $p_message ) {
 		$t_header = "\n" . lang_get( 'on_date' ) . ' ' . $t_date . ', ' . $t_sender . ' ' . $t_sender_email . lang_get( 'sent_you_this_reminder_about' ) . ': ' . "\n\n";
 		$t_contents = $t_header . string_get_bug_view_url_with_fqdn( $p_bug_id ) . " \n\n" . $p_message;
 
-		$t_id = email_store( $t_email, $t_subject, $t_contents );
+		$t_id = email_store( $t_email, $t_subject, $t_contents, [], false, '' );
 		if( $t_id !== null ) {
 			$t_result[] = $t_recipient;
 		}
@@ -1609,7 +1609,7 @@ function email_user_mention( $p_bug_id, $p_mention_user_ids, $p_message, $p_remo
 		$t_header = "\n" . lang_get( 'on_date' ) . ' ' . $t_date . ', ' . $t_sender . ' ' . $t_sender_email . lang_get( 'mentioned_you' ) . "\n\n";
 		$t_contents = $t_header . string_get_bug_view_url_with_fqdn( $p_bug_id ) . " \n\n" . $p_message;
 
-		$t_id = email_store( $t_email, $t_complete_subject, $t_contents );
+		$t_id = email_store( $t_email, $t_complete_subject, $t_contents, [], false, '' );
 		if( $t_id !== null ) {
 			$t_result[] = $t_mention_user_id;
 		}
@@ -1668,8 +1668,10 @@ function email_bug_info_to_one_user( array $p_visible_bug_data, $p_message_id, $
 		$t_mail_headers['In-Reply-To'] = $t_message_md5;
 	}
 
+	$unique = md5($p_visible_bug_data['email_bug'] . $t_user_email);
+
 	# send mail
-	email_store( $t_user_email, $t_subject, $t_message, $t_mail_headers );
+	email_store( $t_user_email, $t_subject, $t_message, $t_mail_headers, false, $unique );
 
 	return;
 }

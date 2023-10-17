@@ -896,6 +896,8 @@ $g_upgrade[211] = array( 'AlterColumnSQL', array( db_get_table( 'email' ), "
 	email					C(191)	$t_notnull DEFAULT \" '' \"" ) );
 
 # Release marker: 2.25.0
+$g_upgrade[] = array( 'AddColumnSQL', array( db_get_table( 'email' ), "
+	unique_key			C(32)	NOTNULL DEFAULT \" '' \"" ) );
 
 # ----------------------------------------------------------------------------
 # End of schema definition, clear local variables
