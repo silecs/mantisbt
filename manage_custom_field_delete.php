@@ -49,7 +49,7 @@ require_api( 'lang_api.php' );
 require_api( 'print_api.php' );
 require_api( 'string_api.php' );
 
-form_security_validate( 'manage_custom_field_delete' );
+form_security_validate( 'manage_custom_field_update' );
 
 auth_reauthenticate();
 access_ensure_global_level( config_get( 'manage_custom_fields_threshold' ) );
@@ -71,12 +71,6 @@ helper_ensure_confirmed(
 
 custom_field_destroy( $f_field_id );
 
-form_security_purge( 'manage_custom_field_delete' );
+form_security_purge( 'manage_custom_field_update' );
 
-layout_page_header( null, $f_return );
-
-layout_page_begin( 'manage_overview_page.php' );
-
-html_operation_successful( $f_return );
-
-layout_page_end();
+print_header_redirect( $f_return );

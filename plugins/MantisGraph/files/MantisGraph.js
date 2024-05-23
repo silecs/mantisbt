@@ -1,8 +1,8 @@
-/* jshint -W097, -W031 */
+/* jshint esversion: 6, -W097, -W031 */
 /* globals Chart */
 "use strict";
 
-$(document).ready( function() {
+$(function() {
     // Default color scheme
     Chart.defaults.global.plugins.colorschemes.scheme = 'tableau.Classic20';
 
@@ -57,7 +57,7 @@ $(document).ready( function() {
     });
 
     $("canvas[id*='barchart']").each( function() {
-        var type = this.id.substr(0,8) === 'barchart' ? 'bar' : 'horizontalBar';
+        const type = this.id.substring(0, 8) === 'barchart' ? 'bar' : 'horizontalBar';
         new Chart( $(this), {
             type: type,
             data: {
@@ -104,7 +104,7 @@ $(document).ready( function() {
     });
 
     $("canvas[id^='linebydate']").each( function() {
-        var ctx = $(this).get(0).getContext("2d");
+        const ctx = $(this).get(0).getContext("2d");
         new Chart(ctx, {
             type: 'line',
             data: {

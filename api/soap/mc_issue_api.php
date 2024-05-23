@@ -61,9 +61,10 @@ function mc_issue_exists( $p_username, $p_password, $p_issue_id ) {
  * @param string  $p_username The name of the user trying to access the issue.
  * @param string  $p_password The password of the user.
  * @param integer $p_issue_id The id of the issue to retrieve.
+ * @param array|null The list of fields to include in the result or null for all.
  * @return array that represents an IssueData structure
  */
-function mc_issue_get( $p_username, $p_password, $p_issue_id ) {
+function mc_issue_get( $p_username, $p_password, $p_issue_id, $p_fields = null ) {
 	$t_user_id = mci_check_login( $p_username, $p_password );
 	if( $t_user_id === false ) {
 		return mci_fault_login_failed();
@@ -83,7 +84,7 @@ function mc_issue_get( $p_username, $p_password, $p_issue_id ) {
 	log_event( LOG_WEBSERVICE, 'getting details for issue \'' . $p_issue_id . '\'' );
 
 	$t_bug = bug_get( $p_issue_id, true );
-	$t_issue_data = mci_issue_data_as_array( $t_bug, $t_user_id, $t_lang );
+	$t_issue_data = mci_issue_data_as_array( $t_bug, $t_user_id, $t_lang, $p_fields );
 	return $t_issue_data;
 }
 
@@ -411,7 +412,7 @@ function mci_issue_set_custom_fields( $p_issue_id, array &$p_custom_fields = nul
 				throw new ClientException(
 					$t_msg,
 					ERROR_EMPTY_FIELD,
-					"custom_field['id']" );
+					["custom_field['id']"] );
 			}
 
 			# get custom field id from object ref
@@ -420,7 +421,7 @@ function mci_issue_set_custom_fields( $p_issue_id, array &$p_custom_fields = nul
 				throw new ClientException(
 					"Custom field '" . $t_field['name'] . "' not found.",
 					ERROR_CUSTOM_FIELD_NOT_FOUND,
-					"custom_field['id']" );
+					["custom_field['id']"] );
 			}
 
 			# skip if current user doesn't have login access.
@@ -436,14 +437,14 @@ function mci_issue_set_custom_fields( $p_issue_id, array &$p_custom_fields = nul
 				throw new ClientException(
 					"Invalid value for custom field '$t_name'",
 					ERROR_INVALID_FIELD_VALUE,
-					"value" );
+					['value'] );
 			}
 
 			if( !custom_field_set_value( $t_custom_field_id, $p_issue_id, $t_value, $p_log_insert ) ) {
 				throw new ClientException(
 					"Invalid value for custom field '$t_name'.",
 					ERROR_INVALID_FIELD_VALUE,
-					"value" );
+					['value'] );
 			}
 		}
 	}
@@ -1009,9 +1010,28 @@ function mc_issue_update( $p_username, $p_password, $p_issue_id, stdClass $p_iss
 	$t_category = isset( $p_issue['category'] ) ? $p_issue['category'] : null;
 	$t_category_id = mci_get_category_id( $t_category, $t_project_id );
 
-	$t_version_id = isset( $p_issue['version'] ) ? mci_get_version_id( $p_issue['version'], $t_project_id, 'version' ) : 0;
-	$t_fixed_in_version_id = isset( $p_issue['fixed_in_version'] ) ? mci_get_version_id( $p_issue['fixed_in_version'], $t_project_id, 'fixed_in_version' ) : 0;
-	$t_target_version_id = isset( $p_issue['target_version'] ) ? mci_get_version_id( $p_issue['target_version'], $t_project_id, 'target_version' ) : 0;
+	/**
+	 * Retrieve Id of Version to set.
+	 *
+	 * If the Version is not defined in the issue data, the function will return 0
+	 * which will cause the version field to be cleared when the Issue is updated.
+	 *
+	 * @param string $p_field      Version field to update.
+	 * @param array  $p_issue      Issue data.
+	 * @param int    $p_project_id
+	 *
+	 * @return int Version Id or 0 to unset the version
+	 * @throws ClientException
+	 */
+	$fn_get_version_id = function( string $p_field, array $p_issue, int $p_project_id ): int {
+		if( !isset( $p_issue[$p_field] ) ) {
+			return 0;
+		}
+		return mci_get_version_id( $p_issue[$p_field], $p_project_id, $p_field );
+	};
+	$t_version_id = $fn_get_version_id( 'version', $p_issue, $t_project_id );
+	$t_fixed_in_version_id = $fn_get_version_id( 'fixed_in_version', $p_issue, $t_project_id );
+	$t_target_version_id = $fn_get_version_id( 'target_version', $p_issue, $t_project_id );
 
 	if( is_blank( $t_summary ) ) {
 		return ApiObjectFactory::faultBadRequest( 'Mandatory field \'summary\' is missing.' );
@@ -1106,15 +1126,25 @@ function mc_issue_update( $p_username, $p_password, $p_issue_id, stdClass $p_iss
 	if( isset( $p_issue['platform'] ) ) {
 		$t_bug_data->platform = $p_issue['platform'];
 	}
-	if( $t_version_id != 0 ) {
-		$t_bug_data->version = version_get_field( $t_version_id, 'version' );
+
+	/**
+	 * Returns the value to assign to Version field.
+	 *
+	 * @param int $p_version_id If 0, will return '' causing version to be unset.
+	 *
+	 * @return string Version
+	 * @throws ClientException
+	 */
+	$fn_set_version_field = function( int $p_version_id ): string {
+		/** @noinspection PhpUnhandledExceptionInspection */
+		return $p_version_id == 0 ? '' : version_get_field( $p_version_id, 'version' );
+	};
+	$t_bug_data->version = $fn_set_version_field( $t_version_id );
+	$t_bug_data->fixed_in_version = $fn_set_version_field( $t_fixed_in_version_id );
+	if( access_has_project_level( config_get( 'roadmap_update_threshold' ), $t_bug_data->project_id, $t_user_id ) ) {
+		$t_bug_data->target_version = $fn_set_version_field( $t_target_version_id );
 	}
-	if( $t_fixed_in_version_id != 0 ) {
-		$t_bug_data->fixed_in_version = version_get_field( $t_fixed_in_version_id, 'version' );
-	}
-	if( $t_target_version_id != 0 && access_has_project_level( config_get( 'roadmap_update_threshold' ), $t_bug_data->project_id, $t_user_id ) ) {
-		$t_bug_data->target_version = version_get_field( $t_target_version_id, 'version' );
-	}
+
 	if( isset( $p_issue['sticky'] ) && access_has_bug_level( config_get( 'set_bug_sticky_threshold' ), $t_bug_data->id ) ) {
 		$t_bug_data->sticky = $p_issue['sticky'];
 	}
@@ -1155,8 +1185,9 @@ function mc_issue_update( $p_username, $p_password, $p_issue_id, stdClass $p_iss
 
 				if( array_key_exists( $t_bugnote_id, $t_bugnotes_by_id ) ) {
 					$t_bugnote_changed = false;
+					$t_bugnote = $t_bugnotes_by_id[$t_bugnote_id];
 
-					if( $t_bugnote->note !== $t_note['text'] ) {
+					if( isset( $t_note['text']) && $t_bugnote->note !== $t_note['text'] ) {
 						bugnote_set_text( $t_bugnote_id, $t_note['text'] );
 						$t_bugnote_changed = true;
 					}
@@ -1614,74 +1645,158 @@ function mc_issue_relationship_delete( $p_username, $p_password, $p_issue_id, $p
  * @param BugData $p_issue_data A BugData object to process.
  * @param integer $p_user_id    A valid user identifier.
  * @param string  $p_lang       A valid language string.
+ * @param array|null $p_fields  The list of fields to include in the result.
  * @return array The issue as an array
  */
-function mci_issue_data_as_array( BugData $p_issue_data, $p_user_id, $p_lang ) {
+function mci_issue_data_as_array( BugData $p_issue_data, $p_user_id, $p_lang, $p_fields = null ) {
 	global $g_project_override;
 	$t_project_id = $p_issue_data->project_id;
 	$g_project_override = $t_project_id;
 
 	$t_id = (int)$p_issue_data->id;
 
+	if( $p_fields === null ) {
+		$t_fields = null;
+	} else {
+		$t_fields = array();
+		foreach( $p_fields as $t_field ) {
+			$t_fields[$t_field] = true;
+		}
+
+		# null it out, so it doesn't get used by mistake
+		$p_fields = null;	
+	}
+
 	$t_issue = array();
-	$t_issue['id'] = $t_id;
-	$t_issue['summary'] = mci_sanitize_xml_string( $p_issue_data->summary );
-	$t_issue['description'] = mci_sanitize_xml_string( bug_get_text_field( $t_id, 'description' ) );
 
-	$t_steps_to_reproduce = bug_get_text_field( $t_id, 'steps_to_reproduce' );
-	$t_issue['steps_to_reproduce'] = mci_null_if_empty( mci_sanitize_xml_string( $t_steps_to_reproduce ) );
-
-	$t_additional_information = bug_get_text_field( $t_id, 'additional_information' );
-	$t_issue['additional_information'] = mci_null_if_empty( mci_sanitize_xml_string( $t_additional_information ) );
-
-	$t_issue['project'] = mci_project_as_array_by_id( $p_issue_data->project_id );
-	$t_issue['category'] = mci_get_category( $p_issue_data->category_id );
-	$t_issue['version'] = mci_get_version( $p_issue_data->version, $p_issue_data->project_id );
-	$t_issue['fixed_in_version'] = mci_get_version( $p_issue_data->fixed_in_version, $p_issue_data->project_id );
-	if( access_has_bug_level( config_get( 'roadmap_view_threshold' ), $t_id ) ) {
-		$t_issue['target_version'] = mci_get_version( $p_issue_data->target_version, $p_issue_data->project_id );
+	if( $t_fields === null || isset( $t_fields['id'] ) ) {
+		$t_issue['id'] = $t_id;
 	}
 
-	$t_issue['reporter'] = mci_account_get_array_by_id( $p_issue_data->reporter_id );
-
-	if( !empty( $p_issue_data->handler_id ) &&
-		access_has_bug_level( config_get( 'view_handler_threshold', null, null, $t_project_id ), $t_id, $p_user_id ) ) {
-		$t_issue['handler'] = mci_account_get_array_by_id($p_issue_data->handler_id);
+	if( $t_fields === null || isset( $t_fields['summary'] ) ) {
+		$t_issue['summary'] = mci_sanitize_xml_string( $p_issue_data->summary );
 	}
 
-	$t_issue['status'] = mci_enum_get_array_by_id( $p_issue_data->status, 'status', $p_lang );
-	$t_issue['resolution'] = mci_enum_get_array_by_id( $p_issue_data->resolution, 'resolution', $p_lang );
-	$t_issue['view_state'] = mci_enum_get_array_by_id( $p_issue_data->view_state, 'view_state', $p_lang );
-	$t_issue['priority'] = mci_enum_get_array_by_id( $p_issue_data->priority, 'priority', $p_lang );
-	$t_issue['severity'] = mci_enum_get_array_by_id( $p_issue_data->severity, 'severity', $p_lang );
-	$t_issue['reproducibility'] = mci_enum_get_array_by_id( $p_issue_data->reproducibility, 'reproducibility', $p_lang );
-
-	if( config_get( 'enable_projection' ) != OFF ) {
-		$t_issue['projection'] = mci_enum_get_array_by_id( $p_issue_data->projection, 'projection', $p_lang );
+	if( $t_fields === null || isset( $t_fields['description'] ) ) {
+		$t_issue['description'] = mci_sanitize_xml_string( bug_get_text_field( $t_id, 'description' ) );
 	}
 
-	if( config_get( 'enable_product_build' ) != OFF ) {
-		$t_issue['build'] = mci_null_if_empty( $p_issue_data->build );
+	if( $t_fields === null || isset( $t_fields['steps_to_reproduce'] ) ) {
+		$t_steps_to_reproduce = bug_get_text_field( $t_id, 'steps_to_reproduce' );
+		$t_issue['steps_to_reproduce'] = mci_null_if_empty( mci_sanitize_xml_string( $t_steps_to_reproduce ) );
 	}
 
-	if( config_get( 'allow_freetext_in_profile_fields' ) != OFF ) {
-		$t_issue['platform'] = mci_null_if_empty( $p_issue_data->platform );
-		$t_issue['os'] = mci_null_if_empty( $p_issue_data->os );
-		$t_issue['os_build'] = mci_null_if_empty( $p_issue_data->os_build );
+	if( $t_fields === null || isset( $t_fields['additional_information'] ) ) {
+		$t_additional_information = bug_get_text_field( $t_id, 'additional_information' );
+		$t_issue['additional_information'] = mci_null_if_empty( mci_sanitize_xml_string( $t_additional_information ) );
 	}
 
-	if( config_get( 'enable_eta' ) != OFF ) {
-		$t_issue['eta'] = mci_enum_get_array_by_id( $p_issue_data->eta, 'eta', $p_lang );
+	if( $t_fields === null || isset( $t_fields['project'] ) ) {
+		$t_issue['project'] = mci_project_as_array_by_id( $p_issue_data->project_id );
 	}
 
-	if( access_has_bug_level( config_get( 'due_date_view_threshold' ), $t_id ) ) {
-		$t_issue['due_date'] = ApiObjectFactory::datetime( $p_issue_data->due_date );
+	if( $t_fields === null || isset( $t_fields['category'] ) ) {
+		$t_issue['category'] = mci_get_category( $p_issue_data->category_id );
+	}
+
+	if( $t_fields === null || isset( $t_fields['version'] ) ) {
+		$t_issue['version'] = mci_get_version( $p_issue_data->version, $p_issue_data->project_id );
+	}
+
+	if( $t_fields === null || isset( $t_fields['fixed_in_version'] ) ) {
+		$t_issue['fixed_in_version'] = mci_get_version( $p_issue_data->fixed_in_version, $p_issue_data->project_id );
+	}
+
+	if( $t_fields === null || isset( $t_fields['target_version'] ) ) {
+		if( access_has_bug_level( config_get( 'roadmap_view_threshold' ), $t_id ) ) {
+			$t_issue['target_version'] = mci_get_version( $p_issue_data->target_version, $p_issue_data->project_id );
+		}
+	}
+
+	if( $t_fields === null || isset( $t_fields['reporter'] ) ) {
+		$t_issue['reporter'] = mci_account_get_array_by_id( $p_issue_data->reporter_id );
+	}
+
+	if( $t_fields === null || isset( $t_fields['handler'] ) ) {
+		if( !empty( $p_issue_data->handler_id ) &&
+			access_has_bug_level( config_get( 'view_handler_threshold', null, null, $t_project_id ), $t_id, $p_user_id ) ) {
+			$t_issue['handler'] = mci_account_get_array_by_id($p_issue_data->handler_id);
+		}
+	}
+
+	if( $t_fields === null || isset( $t_fields['status'] ) ) {
+		$t_issue['status'] = mci_enum_get_array_by_id( $p_issue_data->status, 'status', $p_lang );
+	}
+
+	if( $t_fields === null || isset( $t_fields['resolution'] ) ) {
+		$t_issue['resolution'] = mci_enum_get_array_by_id( $p_issue_data->resolution, 'resolution', $p_lang );
+	}
+
+	if( $t_fields === null || isset( $t_fields['view_state'] ) ) {
+		$t_issue['view_state'] = mci_enum_get_array_by_id( $p_issue_data->view_state, 'view_state', $p_lang );
+	}
+
+	if( $t_fields === null || isset( $t_fields['priority'] ) ) {
+		$t_issue['priority'] = mci_enum_get_array_by_id( $p_issue_data->priority, 'priority', $p_lang );
+	}
+
+	if( $t_fields === null || isset( $t_fields['severity'] ) ) {
+		$t_issue['severity'] = mci_enum_get_array_by_id( $p_issue_data->severity, 'severity', $p_lang );
+	}
+
+	if( $t_fields === null || isset( $t_fields['reproducibility'] ) ) {
+		$t_issue['reproducibility'] = mci_enum_get_array_by_id( $p_issue_data->reproducibility, 'reproducibility', $p_lang );
+	}
+
+	if( $t_fields === null || isset( $t_fields['projection'] ) ) {
+		if( config_get( 'enable_projection' ) != OFF ) {
+			$t_issue['projection'] = mci_enum_get_array_by_id( $p_issue_data->projection, 'projection', $p_lang );
+		}
+	}
+
+	if( $t_fields === null || isset( $t_fields['build'] ) ) {
+		if( config_get( 'enable_product_build' ) != OFF ) {
+			$t_issue['build'] = mci_null_if_empty( $p_issue_data->build );
+		}
+	}
+
+	if( $t_fields === null ||
+		isset( $t_fields['platform'] ) ||
+		isset( $t_fields['os'] ) ||
+		isset( $t_fields['os_build'] )
+	) {
+		if( config_get( 'allow_freetext_in_profile_fields' ) != OFF ) {
+			if( $t_fields === null || isset( $t_fields['platform'] ) ) {
+				$t_issue['platform'] = mci_null_if_empty( $p_issue_data->platform );
+			}
+
+			if( $t_fields === null || isset( $t_fields['os'] ) ) {
+				$t_issue['os'] = mci_null_if_empty( $p_issue_data->os );
+			}
+
+			if( $t_fields === null || isset( $t_fields['os_build'] ) ) {
+				$t_issue['os_build'] = mci_null_if_empty( $p_issue_data->os_build );
+			}
+		}
+	}
+
+	if( $t_fields === null || isset( $t_fields['eta'] ) ) {
+		if( config_get( 'enable_eta' ) != OFF ) {
+			$t_issue['eta'] = mci_enum_get_array_by_id( $p_issue_data->eta, 'eta', $p_lang );
+		}
+	}
+
+	if( $t_fields === null || isset( $t_fields['due_date'] ) ) {
+		if( access_has_bug_level( config_get( 'due_date_view_threshold' ), $t_id ) ) {
+			$t_issue['due_date'] = ApiObjectFactory::datetime( $p_issue_data->due_date );
+		}
 	}
 
 	$t_created_at = ApiObjectFactory::datetime( $p_issue_data->date_submitted );
 	$t_updated_at = ApiObjectFactory::datetime( $p_issue_data->last_updated );
 
 	if( ApiObjectFactory::$soap ) {
+		# No need to optimize the SOAP path and fields processed here are cheap anyways
 		if( config_get( 'enable_profiles' ) != OFF ) {
 			$t_issue['profile_id'] = (int)$p_issue_data->profile_id;
 		}
@@ -1696,39 +1811,63 @@ function mci_issue_data_as_array( BugData $p_issue_data, $p_user_id, $p_lang ) {
 		$t_issue['date_submitted'] = $t_created_at;
 		$t_issue['last_updated'] = $t_updated_at;
 	} else {
-		if( config_get( 'enable_profiles' ) != OFF ) {
-			if ((int)$p_issue_data->profile_id != 0) {
-				$t_issue['profile'] = mci_profile_as_array_by_id($p_issue_data->profile_id);
+		if( $t_fields === null || isset( $t_fields['profile'] ) ) {
+			if( config_get( 'enable_profiles' ) != OFF ) {
+				if ((int)$p_issue_data->profile_id != 0) {
+					$t_issue['profile'] = mci_profile_as_array_by_id($p_issue_data->profile_id);
+				}
 			}
 		}
 
-		$t_issue['sticky'] = (bool)$p_issue_data->sticky;
-		$t_issue['created_at'] = $t_created_at;
-		$t_issue['updated_at'] = $t_updated_at;
+		if( $t_fields === null || isset( $t_fields['sticky'] ) ) {
+			$t_issue['sticky'] = (bool)$p_issue_data->sticky;
+		}
+
+		if( $t_fields === null || isset( $t_fields['created_at'] ) ) {
+			$t_issue['created_at'] = $t_created_at;
+		}
+
+		if( $t_fields === null || isset( $t_fields['updated_at'] ) ) {
+			$t_issue['updated_at'] = $t_updated_at;
+		}
 	}
 
-	# Get attachments - access checked as part of returning attachments
-	$t_issue['attachments'] = mci_issue_get_attachments( $p_issue_data->id, /* note_id */ 0 );
+	if( $t_fields === null || isset( $t_fields['attachments'] ) ) {
+		# Get attachments - access checked as part of returning attachments
+		$t_issue['attachments'] = mci_issue_get_attachments( $p_issue_data->id, /* note_id */ 0 );
+	}
 
 	# Get notes - access checked as part of returning notes.
-	$t_issue['notes'] = mci_issue_get_notes( $p_issue_data->id );
+	if( $t_fields === null || isset( $t_fields['notes'] ) ) {
+		$t_issue['notes'] = mci_issue_get_notes( $p_issue_data->id );
+	}
 
 	# Get attachments - access checked as part of returning relationships
-	$t_issue['relationships'] = mci_issue_get_relationships( $p_issue_data->id, $p_user_id );
+	if( $t_fields === null || isset( $t_fields['relationships'] ) ) {
+		$t_issue['relationships'] = mci_issue_get_relationships( $p_issue_data->id, $p_user_id );
+	}
 
 	# Get custom fields - access checked as part of returning custom fields
-	$t_issue['custom_fields'] = mci_issue_get_custom_fields( $p_issue_data->id );
+	if( $t_fields === null || isset( $t_fields['custom_fields'] ) ) {
+		$t_issue['custom_fields'] = mci_issue_get_custom_fields( $p_issue_data->id );
+	}
 
 	# Get tags - access checked as part of returning tags
-	$t_issue['tags'] = mci_issue_get_tags_for_bug_id( $p_issue_data->id, $p_user_id );
+	if( $t_fields === null || isset( $t_fields['tags'] ) ) {
+		$t_issue['tags'] = mci_issue_get_tags_for_bug_id( $p_issue_data->id, $p_user_id );
+	}
 
 	# Get users monitoring issue - access checked as part of returning user list.
-	$t_issue['monitors'] = mci_account_get_array_by_ids( bug_get_monitors( $p_issue_data->id ) );
+	if( $t_fields === null || isset( $t_fields['monitors'] ) ) {
+		$t_issue['monitors'] = mci_account_get_array_by_ids( bug_get_monitors( $p_issue_data->id ) );
+	}
 
 	if( !ApiObjectFactory::$soap ) {
-		$t_history = mci_issue_get_history( $p_issue_data->id, $p_user_id, $p_lang );
-		if( !empty( $t_history ) ) {
-			$t_issue['history'] = $t_history;
+		if( $t_fields === null || isset( $t_fields['history'] ) ) {
+			$t_history = mci_issue_get_history( $p_issue_data->id, $p_user_id, $p_lang );
+			if( !empty( $t_history ) ) {
+				$t_issue['history'] = $t_history;
+			}
 		}
 
 		mci_remove_null_keys( $t_issue );

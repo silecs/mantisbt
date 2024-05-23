@@ -91,9 +91,14 @@ check_print_test_row(
 
 if( db_is_mysql() ) {
 	check_print_test_warn_row(
-		'PHP support for MySQL driver',
+		'PHP support for legacy MySQL driver',
 		'mysql' != $t_database_type,
-		array( false => "'mysql' driver is deprecated as of PHP 5.5.0, please use 'mysqli' instead" )
+		array( false => "'mysql' driver is deprecated as of PHP 5.5.0 and has been removed as of PHP 7.0.0, please use 'mysqli' instead" )
+	);
+
+	check_print_test_row( 'PHP support for MySQL Native Driver',
+		function_exists( 'mysqli_stmt_get_result' ),
+		array( false => 'Check that the MySQL Native Driver (mysqlnd) has been compiled into your server.' )
 	);
 
 	check_print_test_warn_row(
@@ -298,9 +303,11 @@ if( db_is_mysql() ) {
 	# Version support information
 	$t_versions = array(
 		# Version => Final release (EOL) date
+		'15'  => '2027-11-11',
+		'14'  => '2026-11-12',
 		'13'  => '2025-11-13',
 		'12'  => '2024-11-14',
-		'11'  => '2023-11090',
+		'11'  => '2023-11-09',
 		'10'  => '2022-11-10',
 		'9.6' => '2021-11-11',
 		'9.5' => '2021-02-11',

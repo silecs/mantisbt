@@ -729,8 +729,7 @@ function print_column_title_target_version( $p_sort, $p_dir, $p_columns_target =
 function print_column_title_view_state( $p_sort, $p_dir, $p_columns_target = COLUMNS_TARGET_VIEW_PAGE ) {
 	echo '<th class="column-view-state">';
 	$t_view_state_text = lang_get( 'view_status' );
-	$t_view_state_icon = ' ' . icon_get( 'fa-lock', '', $t_view_state_text );
-	print_view_bug_sort_link( $t_view_state_icon, 'view_state', $p_sort, $p_dir, $p_columns_target );
+	print_view_bug_sort_link( $t_view_state_text, 'view_state', $p_sort, $p_dir, $p_columns_target, 'fa-lock' );
 	print_sort_icon( $p_dir, $p_sort, 'view_state' );
 	echo '</th>';
 }
@@ -1063,8 +1062,7 @@ function print_column_title_due_date( $p_sort, $p_dir, $p_columns_target = COLUM
 function print_column_title_overdue( $p_sort, $p_dir, $p_columns_target = COLUMNS_TARGET_VIEW_PAGE ) {
 	echo '<th class="column-overdue">';
 	$t_overdue_text = lang_get( 'overdue' );
-	$t_overdue_icon = ' ' . icon_get( 'fa-times-circle-o', '', $t_overdue_text );
-	print_view_bug_sort_link( $t_overdue_icon, 'due_date', $p_sort, $p_dir, $p_columns_target );
+	print_view_bug_sort_link( $t_overdue_text, 'due_date', $p_sort, $p_dir, $p_columns_target, 'fa-clock-o' );
 	print_sort_icon( $p_dir, $p_sort, 'due_date' );
 	echo '</th>';
 }
@@ -1078,7 +1076,7 @@ function print_column_title_overdue( $p_sort, $p_dir, $p_columns_target = COLUMN
  * @access public
  */
 function print_column_selection( BugData $p_bug, $p_columns_target = COLUMNS_TARGET_VIEW_PAGE ) {
-	global $g_checkboxes_exist;
+	global $g_checkboxes_exist, $g_enable_mass_operations;
 
 	echo '<td class="column-selection">';
 	if( COLUMNS_TARGET_PRINT_PAGE == $p_columns_target ||
@@ -1097,11 +1095,13 @@ function print_column_selection( BugData $p_bug, $p_columns_target = COLUMNS_TAR
 		access_has_project_level( config_get( 'add_bugnote_threshold', null, null, $p_bug->project_id ), $p_bug->project_id ) ||
 		access_has_project_level( config_get( 'tag_attach_threshold', null, null, $p_bug->project_id ), $p_bug->project_id ) ||
 		access_has_project_level( config_get( 'roadmap_update_threshold', null, null, $p_bug->project_id ), $p_bug->project_id ) ) {
-		$g_checkboxes_exist = true;
-		echo '<div class="checkbox no-padding no-margin"><label>';
-		printf( '<input type="checkbox" name="bug_arr[]" value="%d" class="ace" />', $p_bug->id );
-		echo '<span class="lbl"></span>';
-		echo '</label></div>';
+		if ($g_enable_mass_operations ?? true) {
+			$g_checkboxes_exist = true;
+			echo '<div class="checkbox no-padding no-margin"><label>';
+			printf( '<input type="checkbox" name="bug_arr[]" value="%d" class="ace" />', $p_bug->id );
+			echo '<span class="lbl"></span>';
+			echo '</label></div>';
+		}
 	} else {
 		echo '&#160;';
 	}

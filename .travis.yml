@@ -18,6 +18,12 @@ install:
   - composer install
 
 before_script:
+  # sendmail replacement
+  - chmod +x "$TRAVIS_BUILD_DIR/tests/fakesendmail.sh"
+  - echo 'sendmail_path = $TRAVIS_BUILD_DIR/tests/fakesendmail.sh' > ./tests/sendmail.ini
+  - phpenv config-add ./tests/sendmail.ini
+
+  # MantisBT setup
   - ./build/travis_before_script.sh
 
 script:
@@ -33,11 +39,13 @@ branches:
     - /master-[0-9.]+/
 
 php:
+  - 8.3
+  - 8.2
+  - 8.1
   - 8.0
   - 7.4
   - 7.3
   - 7.2
-  - 7.1
 
 env:
   - DB=mysql
@@ -45,14 +53,6 @@ env:
 
 jobs:
   include:
-    # Use 'xenial' build environment for legacy PHP versions
-    - php: 7.0
-      dist: xenial
-      env: DB=mysql
-    - php: 7.0
-      dist: xenial
-      env: DB=pgsql
-
     # Add a specific build for Documentation
     - name: Documentation
       env: DOCBOOK=1

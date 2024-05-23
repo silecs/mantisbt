@@ -96,7 +96,14 @@ require_api( 'version_api.php' );
  * @return boolean
  */
 function print_header_redirect( $p_url, $p_die = true, $p_sanitize = false, $p_absolute = false ) {
-	if( ON == config_get_global( 'stop_on_errors' ) && error_handled() ) {
+	if( error_handled() ) {
+		# Display a basic "proceed" page to show any pending errors, regardless
+		# of $g_stop_on_errors setting which is actually handled in
+		# html_meta_redirect(), called by layout_page_header().
+		layout_page_header( null, $p_url );
+		layout_page_begin();
+		html_operation_successful( $p_url );
+		layout_page_end();
 		return false;
 	}
 
@@ -151,11 +158,14 @@ function print_header_redirect_view( $p_bug_id ) {
  *
  * @param integer $p_bug_id A bug identifier.
  * @return void
+ * @deprecated 2.26.0 Use print_header_redirect() instead.
  */
 function print_successful_redirect_to_bug( $p_bug_id ) {
-	$t_url = string_get_bug_view_url( $p_bug_id );
+	error_parameters( __FUNCTION__ . '()', 'print_header_redirect()' );
+	trigger_error( ERROR_DEPRECATED_SUPERSEDED, DEPRECATED );
 
-	print_successful_redirect( $t_url );
+	$t_url = string_get_bug_view_url( $p_bug_id );
+	print_header_redirect( $t_url );
 }
 
 /**
@@ -163,20 +173,15 @@ function print_successful_redirect_to_bug( $p_bug_id ) {
  * If the show query count is OFF, redirect right away.
  *
  * @param string $p_redirect_to URI to redirect to.
+ * @param bool $p_force_show Force showing operation successful
  * @return void
+ * @deprecated 2.26.0 Use print_header_redirect() instead.
  */
-function print_successful_redirect( $p_redirect_to ) {
-	if( helper_log_to_page() ) {
-		layout_page_header( null, $p_redirect_to );
-		layout_page_begin();
-		echo '<br /><div class="center">';
-		echo lang_get( 'operation_successful' ) . '<br />';
-		print_link_button( $p_redirect_to, lang_get( 'proceed' ) );
-		echo '</div>';
-		layout_page_end();
-	} else {
-		print_header_redirect( $p_redirect_to );
-	}
+function print_successful_redirect( $p_redirect_to, $p_force_show = false ) {
+	error_parameters( __FUNCTION__ . '()', 'print_header_redirect()' );
+	trigger_error( ERROR_DEPRECATED_SUPERSEDED, DEPRECATED );
+
+	print_header_redirect( $p_redirect_to );
 }
 
 /**
@@ -1306,19 +1311,26 @@ function print_formatted_severity_string( BugData $p_bug ) {
 }
 
 /**
- * Print view bug sort link
- * @todo params should be in same order as print_manage_user_sort_link
- * @param string  $p_string         The displayed text of the link.
- * @param string  $p_sort_field     The field to sort.
- * @param string  $p_sort           The field to sort by.
- * @param string  $p_dir            The sort direction - either ASC or DESC.
- * @param integer $p_columns_target See COLUMNS_TARGET_* in constant_inc.php.
+ * Print view bug sort link.
+ *
+ * Prints the column header as a link allowing to change the sort order.
+ *
+ * @param string $p_label          The displayed text of the link.
+ * @param string $p_sort_field     The field to sort.
+ * @param string $p_sort           The field to sort by.
+ * @param string $p_dir            The sort direction - either ASC or DESC.
+ * @param int    $p_columns_target See COLUMNS_TARGET_* in constant_inc.php.
+ * @param string $p_icon           Optional Fontawesome icon to display instead of text.
+ *                                 If is set, $p_label will be used as the icon's title attribute.
+ *
  * @return void
+ *
+ * @todo params should be in same order as print_manage_user_sort_link
  */
-function print_view_bug_sort_link( $p_string, $p_sort_field, $p_sort, $p_dir, $p_columns_target = COLUMNS_TARGET_VIEW_PAGE ) {
+function print_view_bug_sort_link( $p_label, $p_sort_field, $p_sort, $p_dir, $p_columns_target = COLUMNS_TARGET_VIEW_PAGE, $p_icon = '' ) {
 	# @TODO cproensa, $g_filter is needed to get the temporary id, since the
-	# actual filter is not providede as parameter. Ideally, we should not
-	# rely in this global variable, but at the moment is not possible without
+	# actual filter is not provided as parameter. Ideally, we should not
+	# rely on this global variable, but at the moment is not possible without
 	# a rewrite of these print functions.
 	global $g_filter;
 
@@ -1339,10 +1351,15 @@ function print_view_bug_sort_link( $p_string, $p_sort_field, $p_sort, $p_dir, $p
 			$t_sort_field = rawurlencode( $p_sort_field );
 			$t_print_parameter = ( $p_columns_target == COLUMNS_TARGET_PRINT_PAGE ) ? '&print=1' : '';
 			$t_filter_parameter = filter_is_temporary( $g_filter ) ? filter_get_temporary_key_param( $g_filter ) . '&' : '';
-			print_link( 'view_all_set.php?' . $t_filter_parameter . 'sort_add=' . $t_sort_field . '&dir_add=' . $p_dir . '&type=' . FILTER_ACTION_PARSE_ADD . $t_print_parameter, $p_string );
+			$t_url = 'view_all_set.php?' . $t_filter_parameter
+				. 'sort_add=' . $t_sort_field
+				. '&dir_add=' . $p_dir
+				. '&type=' . FILTER_ACTION_PARSE_ADD
+				. $t_print_parameter;
+			print_link( $t_url, $p_label, false, '', $p_icon );
 			break;
 		default:
-			echo $p_string;
+			echo $p_label;
 	}
 }
 
@@ -1374,8 +1391,13 @@ function print_manage_user_sort_link( $p_page, $p_string, $p_field, $p_dir, $p_s
 	}
 
 	$t_field = rawurlencode( $p_field );
-	print_link( $p_page . '?sort=' . $t_field . '&dir=' . $t_dir . '&save=1&hideinactive=' . $p_hide_inactive . '&showdisabled=' . $p_show_disabled . '&filter=' . $p_filter . '&search=' . $p_search,
-        $p_string, false, $p_class );
+	print_link(
+		$p_page . '?sort=' . $t_field . '&dir=' . $t_dir . '&save=1&hideinactive=' . $p_hide_inactive
+		. '&showdisabled=' . $p_show_disabled . '&filter=' . $p_filter . '&search=' . $p_search,
+		$p_string,
+		false,
+		$p_class
+	);
 }
 
 /**
@@ -1479,25 +1501,34 @@ function print_bracket_link_prepared( $p_link ) {
 }
 
 /**
- * print a HTML link
- * @param string  $p_link       The page URL.
- * @param string  $p_url_text   The displayed text for the link.
- * @param boolean $p_new_window Whether to open in a new window.
- * @param string  $p_class      The CSS class of the link.
+ * Print a HTML link with optional icon.
+ *
+ * @param string $p_link       The target URL.
+ * @param string $p_url_text   Displayed text for the link, will be escaped prior to display.
+ * @param bool   $p_new_window Whether to open in a new window.
+ * @param string $p_class      The CSS class of the link.
+ * @param string $p_icon       Optional Fontawesome icon to display before $p_label
+ *
  * @return void
  */
-function print_link( $p_link, $p_url_text, $p_new_window = false, $p_class = '' ) {
+function print_link( $p_link, $p_url_text, $p_new_window = false, $p_class = '', $p_icon = '' ) {
+	if( $p_icon ) {
+		$t_url_text = icon_get( $p_icon, '', $p_url_text );
+	} else {
+		$t_url_text = string_attribute( $p_url_text );
+	}
+
 	if( is_blank( $p_link ) ) {
-		echo $p_url_text;
+		echo $t_url_text;
 	} else {
 		$t_link = htmlspecialchars( $p_link );
 		if( $p_new_window === true ) {
-			echo '<a class="new-window ' . $p_class . '" href="' . $t_link . '" target="_blank">' . $p_url_text . '</a>';
+			echo '<a class="new-window ' . $p_class . '" href="' . $t_link . '" target="_blank">' . $t_url_text . '</a>';
 		} else {
 			if( $p_class !== '' ) {
-				echo '<a class="' . $p_class . '" href="' . $t_link . '">' . $p_url_text . '</a>';
+				echo '<a class="' . $p_class . '" href="' . $t_link . '">' . $t_url_text . '</a>';
 			} else {
-				echo '<a href="' . $t_link . '">' . $p_url_text . '</a>';
+				echo '<a href="' . $t_link . '">' . $t_url_text . '</a>';
 			}
 		}
 	}
@@ -1865,23 +1896,6 @@ function get_dropdown( array $p_control_array, $p_control_name, $p_match = '', $
 }
 
 /**
- * Prints the list of visible attachments belonging to a given bug.
- * @param integer $p_bug_id ID of the bug to print attachments list for.
- * @param string $p_security_token The security token to use for deleting attachments.
- * @return void
- */
-function print_bug_attachments_list( $p_bug_id, $p_security_token ) {
-	$t_attachments = file_get_visible_attachments( $p_bug_id );
-	echo "\n<ul>";
-	foreach ( $t_attachments as $t_attachment ) {
-		echo "\n<li>";
-		print_bug_attachment( $t_attachment, $p_security_token );
-		echo "\n</li>";
-	}
-	echo "\n</ul>";
-}
-
-/**
  * Prints information about a single attachment including download link, file
  * size, upload timestamp and an expandable preview for text and image file
  * types.
@@ -1889,7 +1903,7 @@ function print_bug_attachments_list( $p_bug_id, $p_security_token ) {
  * If otherwise specified (i.e. not null), the parameter must contain
  * a valid security token, previously generated by form_security_token().
  * Use this to avoid performance issues when loading pages having many calls to
- * this function, such as print_bug_attachments_list().
+ * this function.
  * @param array $p_attachment An attachment array from within the array returned
  *                            by the file_get_visible_attachments() function.
  * @param string $p_security_token The security token to use for deleting attachments.
@@ -1966,7 +1980,7 @@ function print_bug_attachment( array $p_attachment, $p_security_token ) {
  * If otherwise specified (i.e. not null), the parameter must contain
  * a valid security token, previously generated by form_security_token().
  * Use this to avoid performance issues when loading pages having many calls to
- * this function, such as print_bug_attachments_list().
+ * this function.
  * @param array $p_attachment An attachment array from within the array returned by
  *              the file_get_visible_attachments() function.
  * @param string $p_security_token The security token to use for deleting attachments.

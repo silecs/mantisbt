@@ -37,24 +37,27 @@
 ##############################
 
 /**
- * hostname should be either a hostname or connection string to supply to adodb.
+ * Hostname should be either a hostname or connection string to supply to adodb.
  * For example, if you would like to connect to a database server on the local machine,
  * set hostname to 'localhost'
  * If you need to supply a port to connect to, set hostname as 'localhost:3306'.
  * @global string $g_hostname
  */
 $g_hostname				= 'localhost';
+
 /**
  * User name to use for connecting to the database. The user needs to have
  * read/write access to the MantisBT database. The default user name is "root".
  * @global string $g_db_username
  */
 $g_db_username			= 'root';
+
 /**
  * Password for the specified user name. The default password is empty.
  * @global string $g_db_password
  */
 $g_db_password			= '';
+
 /**
  * Name of database that contains MantisBT tables.
  * The default database name is "bugtracker".
@@ -78,7 +81,7 @@ $g_database_name		= 'bugtracker';
 $g_db_type				= 'mysqli';
 
 /**
- * adodb Data Source Name
+ * Adodb Data Source Name
  * This is an EXPERIMENTAL field.
  * If the above database settings, do not provide enough flexibility, it is
  * possible to specify a dsn for the database connection. For further details,
@@ -191,83 +194,34 @@ unset( $t_local_config );
 # MantisBT Path Settings #
 ##########################
 
-$t_protocol = 'http';
-$t_host = 'localhost';
-if( isset ( $_SERVER['SCRIPT_NAME'] ) ) {
-	$t_protocol = http_is_protocol_https() ? 'https' : 'http';
-
-	# $_SERVER['SERVER_PORT'] is not defined in case of php-cgi.exe
-	if( isset( $_SERVER['SERVER_PORT'] ) ) {
-		$t_port = ':' . $_SERVER['SERVER_PORT'];
-		if( ( ':80' == $t_port && 'http' == $t_protocol )
-		  || ( ':443' == $t_port && 'https' == $t_protocol )) {
-			$t_port = '';
-		}
-	} else {
-		$t_port = '';
-	}
-
-	if( isset( $_SERVER['HTTP_X_FORWARDED_HOST'] ) ) { # Support ProxyPass
-		$t_hosts = explode( ',', $_SERVER['HTTP_X_FORWARDED_HOST'] );
-		$t_host = $t_hosts[0];
-	} else if( isset( $_SERVER['HTTP_HOST'] ) ) {
-		$t_host = $_SERVER['HTTP_HOST'];
-	} else if( isset( $_SERVER['SERVER_NAME'] ) ) {
-		$t_host = $_SERVER['SERVER_NAME'] . $t_port;
-	} else if( isset( $_SERVER['SERVER_ADDR'] ) ) {
-		$t_host = $_SERVER['SERVER_ADDR'] . $t_port;
-	}
-
-	if( !isset( $_SERVER['SCRIPT_NAME'] )) {
-		echo 'Invalid server configuration detected. Please set $g_path manually in ' . $g_config_path . 'config_inc.php.';
-		if( isset( $_SERVER['SERVER_SOFTWARE'] ) && ( stripos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false ) )
-			echo ' Please try to add "fastcgi_param SCRIPT_NAME $fastcgi_script_name;" to the nginx server configuration.';
-		die;
-	}
-
-	# Prevent XSS if the path is displayed later on. This is the equivalent of
-	# FILTER_SANITIZE_STRING, which was deprecated in PHP 8.1:
-	# strip tags and null bytes, then encode quotes into HTML entities
-	$t_path = preg_replace( '/\x00|<[^>]*>?/', '', $_SERVER['SCRIPT_NAME'] );
-	$t_path = str_replace( ["'", '"'], ['&#39;', '&#34;'], $t_path );
-
-	$t_path = dirname( $t_path );
-	switch( basename( $t_path ) ) {
-		case 'admin':
-			$t_path = dirname( $t_path );
-			break;
-		case 'check':		# admin checks dir
-		case 'soap':
-		case 'rest':
-			$t_path = dirname( dirname( $t_path ) );
-			break;
-		case 'swagger':
-			$t_path = dirname( dirname( dirname( $t_path ) ) );
-			break;
-	}
-	$t_path = rtrim( $t_path, '/\\' ) . '/';
-
-	if( strpos( $t_path, '&#' ) ) {
-		echo 'Can not safely determine $g_path. Please set $g_path manually in ' . $g_config_path . 'config_inc.php';
-		die;
-	}
-} else {
-	$t_path = 'mantisbt/';
-}
-
 /**
- * path to your installation as seen from the web browser
- * requires trailing /
+ * Full URL to your installation as seen from the web browser.
+ *
+ * Requires trailing `/`.
+ *
+ * If not set, MantisBT will default this to a working URL valid for most
+ * installations.
+ *
+ * WARNING: The default is built based on headers from the HTTP request
+ * ({@see set_default_path()} in core.php). This is a potential security risk,
+ * as the system will be exposed to Host Header injection attacks, so it is
+ * strongly recommended to initialize this in config_inc.php.
+ *
  * @global string $g_path
  */
-$g_path	= $t_protocol . '://' . $t_host . $t_path;
+$g_path	= '';
 
 /**
- * Short web path without the domain name
- * requires trailing /
+ * Short web path without the domain name.
+ *
+ * requires trailing `/`.
+ *
+ * This is defined by MantisBT core based on the script being executed, and
+ * should not be set in config_inc.php.
+ *
  * @global string $g_short_path
  */
-$g_short_path = $t_path;
+$g_short_path = '';
 
 /**
  * Used to link to manual for User Documentation.
@@ -362,7 +316,7 @@ $g_allow_signup			= ON;
 $g_max_failed_login_count = 5;
 
 /**
- * access level required to be notified when a new user has been created using
+ * Access level required to be notified when a new user has been created using
  * the "signup form"
  * @global integer $g_notify_new_user_created_threshold_min
  */
@@ -378,13 +332,13 @@ $g_notify_new_user_created_threshold_min = ADMINISTRATOR;
 $g_send_reset_password	= ON;
 
 /**
- * use captcha image to validate subscription it requires GD library installed
+ * Use captcha image to validate subscription it requires GD library installed
  * @global integer $g_signup_use_captcha
  */
 $g_signup_use_captcha	= ON;
 
 /**
- * absolute path (with trailing slash!) to folder which contains your
+ * Absolute path (with trailing slash!) to folder which contains your
  * TrueType-Font files used for the Relationship Graphs,
  * and the Workflow Graphs
  * @global string $g_system_font_folder
@@ -435,19 +389,19 @@ $g_antispam_time_window_in_seconds = 3600;
 $g_webmaster_email		= 'webmaster@example.com';
 
 /**
- * the sender email, part of 'From: ' header in emails
+ * The sender email, part of 'From: ' header in emails
  * @global string $g_from_email
  */
 $g_from_email			= 'noreply@example.com';
 
 /**
- * the sender name, part of 'From: ' header in emails
+ * The sender name, part of 'From: ' header in emails
  * @global string $g_from_name
  */
 $g_from_name			= 'Mantis Bug Tracker';
 
 /**
- * the return address for bounced mail
+ * The return address for bounced mail
  * @global string $g_return_path_email
  */
 $g_return_path_email	= 'admin@example.com';
@@ -524,7 +478,6 @@ $g_email_notifications_verbose = OFF;
  * @see $g_notify_flags
  * @global array $g_default_notify_flags
  */
-
 $g_default_notify_flags = array(
 	'reporter'      => ON,
 	'handler'       => ON,
@@ -604,13 +557,13 @@ $g_email_login_enabled = OFF;
 $g_email_ensure_unique = ON;
 
 /**
- * set to OFF to disable email check
+ * Set to OFF to disable email check
  * @global integer $g_check_mx_record
  */
 $g_check_mx_record = OFF;
 
 /**
- * if ON, allow the user to omit an email field
+ * If ON, allow the user to omit an email field
  * note if you allow users to create their own accounts, they
  * must specify an email at that point, no matter what the value
  * of this option is.  Otherwise they would not get their passwords.
@@ -641,7 +594,7 @@ $g_show_user_email_threshold = NOBODY;
 $g_show_user_realname_threshold = NOBODY;
 
 /**
- * select the method to mail by:
+ * Select the method to mail by:
  * PHPMAILER_METHOD_MAIL - mail()
  * PHPMAILER_METHOD_SENDMAIL - sendmail
  * PHPMAILER_METHOD_SMTP - SMTP
@@ -827,17 +780,19 @@ $g_email_smime_extracerts_file = '';
 $g_email_send_using_cronjob = OFF;
 
 /**
- * email separator and padding
+ * Email separator and padding
  * @global string $g_email_separator1
  */
 $g_email_separator1 = str_pad('', 70, '=');
+
 /**
- * email separator and padding
+ * Email separator and padding
  * @global string $g_email_separator2
  */
 $g_email_separator2 = str_pad('', 70, '-');
+
 /**
- * email separator and padding
+ * Email separator and padding
  * @global integer $g_email_padding_length
  */
 $g_email_padding_length	= 28;
@@ -853,21 +808,33 @@ $g_email_retry_in_days = 7;
 ###########################
 
 /**
- * Set to off by default to not expose version to users
+ * Display MantisBT Version number to users in the page footer.
+ *
+ * This is more of a cosmetic setting and should NOT be considered as a security
+ * measure to avoid disclosure of version information to users. OFF by default.
+ *
+ * NOTE: When the REST API is enabled {@see $g_webservice_rest_enabled},
+ * accessing an endpoint will always return the version number in the
+ * `X-Mantis-Version` header, even if the request fails.
+ *
+ * @see MANTIS_VERSION
  * @global integer $g_show_version
  */
 $g_show_version = OFF;
 
 /**
- * String appended to the MantisBT version when displayed to the user
+ * String appended to the MantisBT version when displayed to the user.
+ *
  * @global string $g_version_suffix
  */
 $g_version_suffix = '';
 
 /**
  * Custom copyright and licensing statement shown at the footer of each page.
- * Can contain HTML elements that are valid children of the <address> element.
- * This string is treated as raw HTML and thus you must use &amp; instead of &.
+ *
+ * Can contain HTML elements that are valid children of the `<address>` element.
+ * This string is treated as raw HTML and thus you must use `&amp;` instead of `&`.
+ *
  * @global string $g_copyright_statement
  */
 $g_copyright_statement = '';
@@ -884,7 +851,7 @@ $g_copyright_statement = '';
 $g_default_language = 'auto';
 
 /**
- * list the choices that the users are allowed to choose
+ * List the choices that the users are allowed to choose
  * @global array $g_language_choices_arr
  */
 $g_language_choices_arr = array(
@@ -1096,7 +1063,7 @@ $g_font_family_choices_local = array(
 #############################
 
 /**
- * browser window title
+ * Browser window title
  * @global string $g_window_title
  */
 $g_window_title = 'MantisBT';
@@ -1152,20 +1119,20 @@ $g_logo_url = '%default_home_page%';
 $g_enable_project_documentation = OFF;
 
 /**
- * show extra menu bar with all available projects
+ * Show extra menu bar with all available projects
  * @global integer $g_show_project_menu_bar
  */
 $g_show_project_menu_bar = OFF;
 
 /**
- * show assigned to names
+ * Show assigned to names
  * This is in the view all pages
  * @global integer $g_show_assigned_names
  */
 $g_show_assigned_names = ON;
 
 /**
- * show priority as icon
+ * Show priority as icon
  * OFF: Shows priority as icon in view all bugs page
  * ON:  Shows priority as text in view all bugs page
  * @global integer $g_show_priority_text
@@ -1259,7 +1226,7 @@ $g_excel_columns = array(
 );
 
 /**
- * show projects when in All Projects mode
+ * Show projects when in All Projects mode
  * @global integer $g_show_bug_project_links
  */
 $g_show_bug_project_links = ON;
@@ -1279,7 +1246,7 @@ $g_filter_position = FILTER_POSITION_TOP;
 $g_action_button_position = POSITION_BOTTOM;
 
 /**
- * show product versions in create, view and update screens
+ * Show product versions in create, view and update screens
  * ON forces display even if none are defined
  * OFF suppresses display
  * AUTO suppresses the display if there are no versions defined for the project
@@ -1297,7 +1264,7 @@ $g_show_product_version = AUTO;
 $g_show_version_dates_threshold = NOBODY;
 
 /**
- * show users with their real name or not
+ * Show users with their real name or not
  * @see $g_sort_by_last_name
  * @see $g_show_user_realname_threshold
  * @global integer $g_show_realname
@@ -1305,7 +1272,7 @@ $g_show_version_dates_threshold = NOBODY;
 $g_show_realname = OFF;
 
 /**
- * sorting for names in dropdown lists. If turned on, "Jane Doe" will be sorted
+ * Sorting for names in dropdown lists. If turned on, "Jane Doe" will be sorted
  * with the "D"s
  * @see $g_show_realname
  * @global integer $g_sort_by_last_name
@@ -1450,19 +1417,19 @@ $g_news_enabled = OFF;
 $g_news_limit_method = BY_LIMIT;
 
 /**
- * limit by last X entries
+ * Limit by last X entries
  * @global integer $g_news_view_limit
  */
 $g_news_view_limit = 7;
 
 /**
- * limit by days
+ * Limit by days
  * @global integer $g_news_view_limit_days
  */
 $g_news_view_limit_days = 30;
 
 /**
- * threshold for viewing private news
+ * Threshold for viewing private news
  * @global integer $g_private_news_threshold
  */
 $g_private_news_threshold = DEVELOPER;
@@ -1472,7 +1439,7 @@ $g_private_news_threshold = DEVELOPER;
 ################################
 
 /**
- * signup default
+ * Signup default
  * look in constant_inc.php for values
  * @global integer $g_default_new_account_access_level
  */
@@ -1601,20 +1568,20 @@ $g_hide_status_default = CLOSED;
 $g_show_sticky_issues = ON;
 
 /**
- * make sure people are not refreshing too often
+ * Make sure people are not refreshing too often
  * in minutes
  * @global integer $g_min_refresh_delay
  */
 $g_min_refresh_delay = 10;
 
 /**
- * in minutes
+ * In minutes
  * @global integer $g_default_refresh_delay
  */
 $g_default_refresh_delay = 30;
 
 /**
- * in seconds
+ * In seconds
  * @global integer $g_default_redirect_delay
  */
 $g_default_redirect_delay = 2;
@@ -1742,28 +1709,28 @@ $g_default_email_bugnote_limit = 0;
 #############################
 
 /**
- * how many reporters to show
+ * How many reporters to show
  * this is useful when there are hundreds of reporters
  * @global integer $g_reporter_summary_limit
  */
 $g_reporter_summary_limit = 10;
 
 /**
- * summary date displays
+ * Summary date displays
  * date lengths to count bugs by (in days)
  * @global array $g_date_partitions
  */
 $g_date_partitions = array( 1, 2, 3, 7, 30, 60, 90, 180, 365);
 
 /**
- * shows project '[project] category' when 'All Projects' is selected
+ * Shows project '[project] category' when 'All Projects' is selected
  * otherwise only 'category name'
  * @global integer $g_summary_category_include_project
  */
 $g_summary_category_include_project = OFF;
 
 /**
- * threshold for viewing summary
+ * Threshold for viewing summary
  * @global integer $g_view_summary_threshold
  */
 $g_view_summary_threshold = MANAGER;
@@ -1807,7 +1774,7 @@ $g_resolution_multipliers = array(
 #############################
 
 /**
- * bugnote ordering
+ * Bugnote ordering
  * change to ASC or DESC
  * @global string $g_bugnote_order
  */
@@ -1818,14 +1785,14 @@ $g_bugnote_order = 'DESC';
 #################################
 
 /**
- * bug history visible by default when you view a bug
+ * Bug history visible by default when you view a bug
  * change to ON or OFF
  * @global integer $g_history_default_visible
  */
 $g_history_default_visible = ON;
 
 /**
- * bug history ordering
+ * Bug history ordering
  * change to ASC or DESC
  * @global string $g_history_order
  */
@@ -1836,7 +1803,7 @@ $g_history_order = 'ASC';
 ##########################################
 
 /**
- * are reminders stored as bugnotes
+ * Are reminders stored as bugnotes
  * @global integer $g_store_reminders
  */
 $g_store_reminders = ON;
@@ -2019,7 +1986,7 @@ $g_allowed_files = '';
 $g_disallowed_files = 'svg';
 
 /**
- * prefix to be used for the file system names of files uploaded to projects.
+ * Prefix to be used for the file system names of files uploaded to projects.
  * Eg: doc-001-myprojdoc.zip
  * @global string $g_document_files_prefix
  * @deprecated since 1.0, file names have been stored in a new format
@@ -2027,7 +1994,7 @@ $g_disallowed_files = 'svg';
 $g_document_files_prefix = 'doc';
 
 /**
- * absolute path to the default upload folder.  Requires trailing / or \
+ * Absolute path to the default upload folder.  Requires trailing / or \
  * @global string $g_absolute_path_default_upload_folder
  */
 $g_absolute_path_default_upload_folder = '';
@@ -2095,7 +2062,7 @@ $g_html_valid_tags = 'p, li, ul, ol, br, pre, i, b, u, em, strong';
 $g_html_valid_tags_single_line = 'i, b, u, em, strong';
 
 /**
- * maximum length of the description in a dropdown menu (for search)
+ * Maximum length of the description in a dropdown menu (for search)
  * set to 0 to disable truncations
  * @global integer $g_max_dropdown_length
  */
@@ -2267,7 +2234,15 @@ $g_ldap_bind_passwd = '';
 $g_ldap_uid_field = 'uid';
 
 /**
+ * The LDAP field for the user's e-mail address.
+ * @see $g_use_ldap_email
+ * @global string $g_ldap_email_field
+ */
+$g_ldap_email_field = 'mail';
+
+/**
  * The LDAP field for the user's real name (i.e. common name).
+ * @see $g_use_ldap_realname
  * @global string $g_ldap_realname_field
  */
 $g_ldap_realname_field = 'cn';
@@ -2277,6 +2252,7 @@ $g_ldap_realname_field = 'cn';
  * database (OFF).
  * Note that MantisBT will update the database with the data retrieved
  * from LDAP when ON.
+ * @see $g_ldap_realname_field
  * @global integer $g_use_ldap_realname
  */
 $g_use_ldap_realname = OFF;
@@ -2286,6 +2262,7 @@ $g_use_ldap_realname = OFF;
  * in the database (OFF).
  * Note that MantisBT will update the database with the data retrieved
  * from LDAP when ON.
+ * @see $g_ldap_email_field
  * @global integer $g_use_ldap_email
  */
 $g_use_ldap_email = OFF;
@@ -2475,40 +2452,40 @@ $g_preview_max_width = 0;
 $g_preview_max_height = 250;
 
 /**
- * access level needed to view bugs attachments.  View means to see the file
+ * Access level needed to view bugs attachments.  View means to see the file
  * names, sizes, and timestamps of the attachments.
  * @global integer $g_view_attachments_threshold
  */
 $g_view_attachments_threshold = VIEWER;
 
 /**
- * access level needed to download bug attachments
+ * Access level needed to download bug attachments
  * @global integer $g_download_attachments_threshold
  */
 $g_download_attachments_threshold = VIEWER;
 
 /**
- * access level needed to delete bug attachments
+ * Access level needed to delete bug attachments
  * @global integer $g_delete_attachments_threshold
  */
 $g_delete_attachments_threshold = DEVELOPER;
 
 /**
- * allow users to view attachments uploaded by themselves even if their access
+ * Allow users to view attachments uploaded by themselves even if their access
  * level is below view_attachments_threshold.
  * @global integer $g_allow_view_own_attachments
  */
 $g_allow_view_own_attachments = ON;
 
 /**
- * allow users to download attachments uploaded by themselves even if their
+ * Allow users to download attachments uploaded by themselves even if their
  * access level is below download_attachments_threshold.
  * @global integer $g_allow_download_own_attachments
  */
 $g_allow_download_own_attachments = ON;
 
 /**
- * allow users to delete attachments uploaded by themselves even if their access
+ * Allow users to delete attachments uploaded by themselves even if their access
  * level is below delete_attachments_threshold.
  * @global integer $g_allow_delete_own_attachments
  */
@@ -2750,13 +2727,13 @@ $g_bug_update_page_fields = array(
 ##########################
 
 /**
- * access level needed to report a bug
+ * Access level needed to report a bug
  * @global integer $g_report_bug_threshold
  */
 $g_report_bug_threshold = REPORTER;
 
 /**
- * access level needed to update bugs (i.e., the update_bug_page)
+ * Access level needed to update bugs (i.e., the update_bug_page)
  * This controls whether the user sees the "Update Bug" button in bug_view*_page
  * and the pencil icon in view_all_bug_page
  * @global integer $g_update_bug_threshold
@@ -2764,14 +2741,13 @@ $g_report_bug_threshold = REPORTER;
 $g_update_bug_threshold = UPDATER;
 
 /**
- * access level needed to view bugs
+ * Access level needed to view bugs
  * @global integer $g_view_bug_threshold
  */
 $g_view_bug_threshold = VIEWER;
 
 /**
  * Access level needed to monitor bugs.
- * Look in the constant_inc.php file if you want to set a different value.
  * @global integer $g_monitor_bug_threshold
  */
 $g_monitor_bug_threshold = REPORTER;
@@ -2785,7 +2761,6 @@ $g_show_monitor_list_threshold = DEVELOPER;
 /**
  * Access level needed to add other users to the list of users monitoring
  * a bug.
- * Look in the constant_inc.php file if you want to set a different value.
  * This setting should not be lower than $g_show_monitor_list_threshold.
  * @see $g_show_monitor_list_threshold
  * @global integer $g_monitor_add_others_bug_threshold
@@ -2795,7 +2770,6 @@ $g_monitor_add_others_bug_threshold = DEVELOPER;
 /**
  * Access level needed to delete other users from the list of users
  * monitoring a bug.
- * Look in the constant_inc.php file if you want to set a different value.
  * This setting should not be lower than $g_show_monitor_list_threshold.
  * @see $g_show_monitor_list_threshold
  * @global integer $g_monitor_delete_others_bug_threshold
@@ -2803,20 +2777,38 @@ $g_monitor_add_others_bug_threshold = DEVELOPER;
 $g_monitor_delete_others_bug_threshold = DEVELOPER;
 
 /**
- * access level needed to view private bugs
- * Look in the constant_inc.php file if you want to set a different value
+ * Access level required to print issue reports.
+ *
+ * Grants users access to the Print Reports functionality (Word/HTML) from the
+ * View Issues page (print_all_bug_page.php and print_all_bug_page_word.php).
+ *
+ * @global integer $g_print_reports_threshold
+ */
+$g_print_reports_threshold = UPDATER;
+
+/**
+ * Access level required to export issues.
+ *
+ * Lets user export issues to CSV and Excel from the View Issues page.
+ *
+ * @global integer $g_export_issues_threshold
+ */
+$g_export_issues_threshold = VIEWER;
+
+/**
+ * Access level needed to view private bugs
  * @global integer $g_private_bug_threshold
  */
 $g_private_bug_threshold = DEVELOPER;
 
 /**
- * access level needed to be able to be listed in the assign to field.
+ * Access level needed to be able to be listed in the assign to field.
  * @global integer $g_handle_bug_threshold
  */
 $g_handle_bug_threshold = DEVELOPER;
 
 /**
- * access level needed to show the Assign To: button bug_view*_page or
+ * Access level needed to show the Assign To: button bug_view*_page or
  *  the Assigned list in bug_update*_page.
  *  This allows control over who can route bugs
  * This defaults to $g_handle_bug_threshold
@@ -2825,26 +2817,25 @@ $g_handle_bug_threshold = DEVELOPER;
 $g_update_bug_assign_threshold = '%handle_bug_threshold%';
 
 /**
- * access level needed to view private bugnotes
- * Look in the constant_inc.php file if you want to set a different value
+ * Access level needed to view private bugnotes
  * @global integer $g_private_bugnote_threshold
  */
 $g_private_bugnote_threshold = DEVELOPER;
 
 /**
- * access level needed to view handler
+ * Access level needed to view handler
  * @global integer $g_view_handler_threshold
  */
 $g_view_handler_threshold = VIEWER;
 
 /**
- * access level needed to view history
+ * Access level needed to view history
  * @global integer $g_view_history_threshold
  */
 $g_view_history_threshold = VIEWER;
 
 /**
- * access level needed to send a reminder from the bug view pages
+ * Access level needed to send a reminder from the bug view pages
  * set to NOBODY to disable the feature
  * @global integer $g_bug_reminder_threshold
  */
@@ -2864,7 +2855,7 @@ $g_bug_revision_view_threshold = DEVELOPER;
 $g_bug_revision_drop_threshold = MANAGER;
 
 /**
- * access level needed to upload files to the project documentation section
+ * Access level needed to upload files to the project documentation section
  * You can set this to NOBODY to prevent uploads to projects
  * @see $g_enable_project_documentation
  * @see $g_view_proj_doc_threshold
@@ -2875,7 +2866,7 @@ $g_bug_revision_drop_threshold = MANAGER;
 $g_upload_project_file_threshold = MANAGER;
 
 /**
- * access level needed to upload files to attach to a bug
+ * Access level needed to upload files to attach to a bug
  * You can set this to NOBODY to prevent uploads to bugs but note that
  *  the reporter of the bug will still be able to upload unless you set
  *  $g_allow_reporter_upload or $g_allow_file_upload to OFF
@@ -3032,55 +3023,55 @@ $g_stored_query_create_shared_threshold = MANAGER;
 $g_update_readonly_bug_threshold = MANAGER;
 
 /**
- * threshold for viewing changelog
+ * Threshold for viewing changelog
  * @global integer $g_view_changelog_threshold
  */
 $g_view_changelog_threshold = VIEWER;
 
 /**
-* threshold for viewing timeline
-* @global integer $g_timeline_view_threshold
-*/
+ * Threshold for viewing timeline
+ * @global integer $g_timeline_view_threshold
+ */
 $g_timeline_view_threshold = VIEWER;
 
 /**
- * threshold for viewing roadmap
+ * Threshold for viewing roadmap
  * @global integer $g_roadmap_view_threshold
  */
 $g_roadmap_view_threshold = VIEWER;
 
 /**
- * threshold for updating roadmap, target_version, etc
+ * Threshold for updating roadmap, target_version, etc
  * @global integer $g_roadmap_update_threshold
  */
 $g_roadmap_update_threshold = DEVELOPER;
 
 /**
- * status change thresholds
+ * Status change thresholds
  * @global integer $g_update_bug_status_threshold
  */
 $g_update_bug_status_threshold = DEVELOPER;
 
 /**
- * access level needed to re-open bugs
+ * Access level needed to re-open bugs
  * @global integer $g_reopen_bug_threshold
  */
 $g_reopen_bug_threshold = DEVELOPER;
 
 /**
- * access level needed to assign bugs to unreleased product versions
+ * Access level needed to assign bugs to unreleased product versions
  * @global integer $g_report_issues_for_unreleased_versions_threshold
  */
 $g_report_issues_for_unreleased_versions_threshold = DEVELOPER;
 
 /**
- * access level needed to set a bug sticky
+ * Access level needed to set a bug sticky
  * @global integer $g_set_bug_sticky_threshold
  */
 $g_set_bug_sticky_threshold = MANAGER;
 
 /**
- * this array sets the access thresholds needed to enter each status listed.
+ * This array sets the access thresholds needed to enter each status listed.
  * if a status is not listed, it falls back to $g_update_bug_status_threshold
  * example:
  * $g_set_status_threshold = array(
@@ -3123,7 +3114,7 @@ $g_bugnote_user_change_view_state_threshold = '%change_view_status_threshold%';
 $g_allow_no_category = OFF;
 
 /**
- * limit reporters. Set to ON if you wish to limit reporters to only viewing
+ * Limit reporters. Set to ON if you wish to limit reporters to only viewing
  * bugs that they report.
  * This feature is deprecated and replaced by the 'limit_view_unless_threshold'
  * option. It must be OFF to enable the new one.
@@ -3145,28 +3136,28 @@ $g_limit_reporters = OFF;
 $g_limit_view_unless_threshold = ANYBODY;
 
 /**
- * reporter can close. Allow reporters to close the bugs they reported, after
+ * Reporter can close. Allow reporters to close the bugs they reported, after
  * they are marked resolved.
  * @global integer $g_allow_reporter_close
  */
 $g_allow_reporter_close	 = OFF;
 
 /**
- * reporter can reopen. Allow reporters to reopen the bugs they reported, after
+ * Reporter can reopen. Allow reporters to reopen the bugs they reported, after
  * they are marked resolved.
  * @global integer $g_allow_reporter_reopen
  */
 $g_allow_reporter_reopen = ON;
 
 /**
- * reporter can upload
+ * Reporter can upload
  * Allow reporters to upload attachments to bugs they reported.
  * @global integer $g_allow_reporter_upload
  */
 $g_allow_reporter_upload = ON;
 
 /**
- * account delete
+ * Account delete
  * Allow users to delete their own accounts
  * @global integer $g_allow_account_delete
  */
@@ -3278,13 +3269,13 @@ $g_csv_injection_protection = ON;
 $g_manage_configuration_threshold = MANAGER;
 
 /**
- * threshold for users to view the system configurations
+ * Threshold for users to view the system configurations
  * @global integer $g_view_configuration_threshold
  */
 $g_view_configuration_threshold = ADMINISTRATOR;
 
 /**
- * threshold for users to set the system configurations generically via
+ * Threshold for users to set the system configurations generically via
  * MantisBT web interface.
  * WARNING: Users who have access to set configuration via the interface MUST
  * be trusted.  This is due to the fact that such users can set configurations
@@ -3299,7 +3290,7 @@ $g_set_configuration_threshold = ADMINISTRATOR;
 ####################################
 
 /**
- * status color codes, using the Tango color palette
+ * Status color codes, using the Tango color palette
  * @global array $g_status_colors
  */
 $g_status_colors = array(
@@ -3347,6 +3338,22 @@ $g_cookie_path = '/';
 $g_cookie_domain = '';
 
 /**
+ * Specifies the SameSite attribute to use for the MantisBT cookies.
+ *
+ * Valid values are Strict, Lax (default) or None.
+ *
+ * NOTE: While 'Strict' provides stronger protection against CSRF attacks, it
+ * actually prevents the user's session from being recognized when clicking a
+ * link from a notification e-mail, causing MantisBT to start an anonymous
+ * session even if the user is already logged in.
+ *
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+ *
+ * @global string $g_cookie_samesite
+ */
+$g_cookie_samesite = 'Lax';
+
+/**
  * Prefix for all MantisBT cookies
  * This should be an identifier which does not include spaces or periods,
  * and should be unique per MantisBT installation, especially if
@@ -3374,6 +3381,13 @@ $g_project_cookie = '%cookie_prefix%_PROJECT_COOKIE';
  * @global string $g_view_all_cookie
  */
 $g_view_all_cookie = '%cookie_prefix%_VIEW_ALL_COOKIE';
+
+/**
+ * Collapse settings cookie.
+ * Stores the open/closed state of the collapsible sections.
+ * @global string $g_collapse_settings_cookie
+ */
+$g_collapse_settings_cookie = '%cookie_prefix%_collapse_settings';
 
 /**
  * Stores the filter criteria for the Manage User page
@@ -3455,7 +3469,7 @@ $g_create_short_url = 'http://tinyurl.com/create.php?url=%s';
 #########################
 
 /**
- * status from $g_status_index-1 to 79 are used for the onboard customization
+ * Status from $g_status_index-1 to 79 are used for the onboard customization
  * (if enabled) directly use MantisBT to edit them.
  * @global string $g_access_levels_enum_string
  */
@@ -3484,6 +3498,7 @@ $g_view_state_enum_string = '10:public,50:private';
  * @global string $g_priority_enum_string
  */
 $g_priority_enum_string = '10:none,20:low,30:normal,40:high,50:urgent,60:immediate';
+
 /**
  *
  * @global string $g_severity_enum_string
@@ -3647,21 +3662,25 @@ $g_custom_headers = array();
 
 /**
  * Browser Caching Control
- * By default, we try to prevent the browser from caching anything. These two
- * settings will defeat this for some cases.
+ * By default, we try to prevent the browser from caching anything.
+ * $g_allow_browser_cache & $g_allow_file_cache will defeat this for some cases.
  *
  * Browser Page caching - This will allow the browser to cache all pages. The
  * upside will be better performance, but there may be cases where obsolete
  * information is displayed. Note that this will be bypassed (and caching is
  * allowed) for the bug report pages.
  *
+ * @todo The code that references this config considers it ON if it is set (doesn't use config_get_global() / $g_global_settings)
  * @global integer $g_allow_browser_cache
  */
 # $g_allow_browser_cache = ON;
+
 /**
  * File caching - This will allow the browser to cache downloaded files.
  * Without this set, there may be issues with IE receiving files, and launching
  * support programs.
+ *
+ * @todo The code that references this config considers it ON if it is set (doesn't use config_get_global() / $g_global_settings)
  * @global integer $g_allow_file_cache
  */
 # $g_allow_file_cache = ON;
@@ -3683,7 +3702,7 @@ $g_manage_custom_fields_threshold = ADMINISTRATOR;
 $g_custom_field_link_threshold = MANAGER;
 
 /**
- * Whether to start editng a custom field immediately after creating it
+ * Whether to start editing a custom field immediately after creating it
  * @global integer $g_custom_field_edit_after_create
  */
 $g_custom_field_edit_after_create = ON;
@@ -3807,7 +3826,8 @@ $g_file_type_icons = array(
 	'xlt'	=> 'fa-file-excel-o',
 	'xml'	=> 'fa-file-code-o',
 	'zip'	=> 'fa-file-archive-o',
-	'?'	=> 'fa-file-o' );
+	'?'	=> 'fa-file-o'
+);
 
 /**
  *
@@ -3912,6 +3932,7 @@ $g_relationship_graph_enable = OFF;
  * @global string $g_dot_tool
  */
 $g_dot_tool = '/usr/bin/dot';
+
 /**
  * Complete path to dot and neato tools. Your webserver must have execute
  * permission to these programs in order to generate relationship graphs.
@@ -4132,31 +4153,31 @@ $g_time_tracking_with_billing = OFF;
 $g_time_tracking_stopwatch = OFF;
 
 /**
- * access level required to view time tracking information
+ * Access level required to view time tracking information
  * @global integer $g_time_tracking_view_threshold
  */
 $g_time_tracking_view_threshold = DEVELOPER;
 
 /**
- * access level required to add/edit time tracking information
+ * Access level required to add/edit time tracking information
  * @global integer $g_time_tracking_edit_threshold
  */
 $g_time_tracking_edit_threshold = DEVELOPER;
 
 /**
- * access level required to run reports
+ * Access level required to run reports
  * @global integer $g_time_tracking_reporting_threshold
  */
 $g_time_tracking_reporting_threshold = MANAGER;
 
 /**
- * allow time tracking to be recorded without a bugnote
+ * Allow time tracking to be recorded without a bugnote
  * @global integer $g_time_tracking_without_note
  */
 $g_time_tracking_without_note = ON;
 
 /**
- * default billing rate per hour
+ * Default billing rate per hour
  * @global integer $g_time_tracking_billing_rate
  */
 $g_time_tracking_billing_rate = 0;
@@ -4195,13 +4216,13 @@ $g_allow_freetext_in_profile_fields = ON;
 #################
 
 /**
- * enable/disable plugins
+ * Enable/disable plugins
  * @global integer $g_plugins_enabled
  */
 $g_plugins_enabled = ON;
 
 /**
- * absolute path to plugin files.
+ * Absolute path to plugin files.
  * @global string $g_plugin_path
  */
 $g_plugin_path = $g_absolute_path . 'plugins' . DIRECTORY_SEPARATOR;
@@ -4213,10 +4234,10 @@ $g_plugin_path = $g_absolute_path . 'plugins' . DIRECTORY_SEPARATOR;
 $g_manage_plugin_threshold = ADMINISTRATOR;
 
 /**
-* A mapping of file extensions to mime types, used when serving resources from plugins
-*
-* @global array $g_plugin_mime_types
-*/
+ * A mapping of file extensions to mime types, used when serving resources from plugins
+ *
+ * @global array $g_plugin_mime_types
+ */
 $g_plugin_mime_types = array(
 	    'css' => 'text/css',
 	    'js'  => 'text/javascript',
@@ -4250,13 +4271,13 @@ $g_plugins_force_installed = array();
 ############
 
 /**
- * threshold to update due date submitted
+ * Threshold to update due date submitted
  * @global integer $g_due_date_update_threshold
  */
 $g_due_date_update_threshold = NOBODY;
 
 /**
- * threshold to see due date
+ * Threshold to see due date
  * @global integer $g_due_date_view_threshold
  */
 $g_due_date_view_threshold = NOBODY;
@@ -4489,10 +4510,12 @@ $g_global_settings = array(
 	'bug_list_cookie',
 	'cdn_enabled',
 	'class_path',
+	'collapse_settings_cookie',
 	'compress_html',
 	'cookie_domain',
 	'cookie_path',
 	'cookie_prefix',
+	'cookie_samesite',
 	'cookie_time_length',
 	'copyright_statement',
 	'core_path',
@@ -4540,6 +4563,7 @@ $g_global_settings = array(
 	'language_path',
 	'ldap_bind_dn',
 	'ldap_bind_passwd',
+	'ldap_email_field',
 	'ldap_follow_referrals',
 	'ldap_network_timeout',
 	'ldap_organization',
@@ -4552,6 +4576,8 @@ $g_global_settings = array(
 	'ldap_uid_field',
 	'ldap_use_starttls',
 	'library_path',
+	'log_destination',
+	'log_level',
 	'login_method',
 	'logo_image',
 	'logo_url',
@@ -4652,6 +4678,7 @@ $g_public_config_names = array(
 	'cdn_enabled',
 	'change_view_status_threshold',
 	'check_mx_record',
+	'collapse_settings_cookie',
 	'complete_date_format',
 	'compress_html',
 	'cookie_prefix',
@@ -4749,6 +4776,7 @@ $g_public_config_names = array(
 	'enable_sponsorship',
 	'eta_enum_string',
 	'excel_columns',
+	'export_issues_threshold',
 	'fallback_language',
 	'favicon_image',
 	'file_download_content_type_overrides',
@@ -4825,6 +4853,7 @@ $g_public_config_names = array(
 	'preview_max_width',
 	'preview_text_extensions',
 	'print_issues_page_columns',
+	'print_reports_threshold',
 	'priority_enum_string',
 	'priority_significant_threshold',
 	'private_bug_threshold',
@@ -4974,13 +5003,18 @@ $g_public_config_names = array(
 	'wrap_in_preformatted_text'
 );
 
-# Temporary variables should not remain defined in global scope
-unset( $t_protocol, $t_host, $t_hosts, $t_port, $t_self, $t_path );
-
-
 ############################
 # Webservice Configuration #
 ############################
+
+/**
+ * Whether the REST API is enabled or not.  Note that this flag only
+ * impacts API Token based auth.  Hence, even if the API is disabled, it can still be
+ * used from the Web UI using cookie based authentication.
+ *
+ * @global integer $g_webservice_rest_enabled
+ */
+$g_webservice_rest_enabled = ON;
 
 /**
  * Minimum global access level required to access webservice for readonly operations.
@@ -5083,15 +5117,6 @@ $g_webservice_error_when_version_not_found = ON;
  * @global string $g_webservice_version_when_not_found
  */
 $g_webservice_version_when_not_found = '';
-
-/**
- * Whether the REST API is enabled or not.  Note that this flag only
- * impacts API Token based auth.  Hence, even if the API is disabled, it can still be
- * used from the Web UI using cookie based authentication.
- *
- * @global integer $g_webservice_rest_enabled
- */
-$g_webservice_rest_enabled = ON;
 
 ####################
 # Issue Activities #
