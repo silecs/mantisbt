@@ -137,13 +137,6 @@ $t_warnings = array();
 $t_upgrade_required = false;
 
 if( config_get_global( 'admin_checks' ) == ON ) {
-	# Check if the admin directory is accessible
-	$t_admin_dir = dirname( __FILE__ ) . '/admin';
-	$t_admin_dir_is_accessible = @file_exists( $t_admin_dir . '/.' );
-	if( $t_admin_dir_is_accessible ) {
-		$t_warnings[] = lang_get( 'warning_admin_directory_present' );
-	}
-
 	# Generate a warning if default user administrator/root is valid.
 	$t_admin_user_id = user_get_id_by_name( 'administrator' );
 	if( $t_admin_user_id !== false ) {
@@ -181,26 +174,6 @@ if( config_get_global( 'admin_checks' ) == ON ) {
 	$t_db_version = config_get( 'database_version', 0, ALL_USERS, ALL_PROJECTS );
 	if( $t_db_version == 0 ) {
 		$t_warnings[] = lang_get( 'error_database_no_schema_version' );
-	}
-
-	# Check for db upgrade for versions > 1.0.0 using new installer and schema
-	if( $t_admin_dir_is_accessible ) {
-		require_once( 'admin/schema.php' );
-		/** @var array $g_upgrade */
-		$t_upgrades_reqd = count( $g_upgrade ) - 1;
-
-		if( ( 0 < $t_db_version ) &&
-			( $t_db_version != $t_upgrades_reqd ) ) {
-
-			if( $t_db_version < $t_upgrades_reqd ) {
-				$t_warnings[] = lang_get( 'error_database_version_out_of_date_2'
-				);
-				$t_upgrade_required = true;
-			}
-			else {
-				$t_warnings[] = lang_get( 'error_code_version_out_of_date' );
-			}
-		}
 	}
 }
 ?>
