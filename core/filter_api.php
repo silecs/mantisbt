@@ -1338,7 +1338,7 @@ function filter_draw_selection_area() {
 					<form method="post" action="view_all_set.php">
 						<input type="hidden" name="type" value="<?php echo FILTER_ACTION_LOAD ?>" />
 						<select id="filter-bar-query-id" class="input-xs">
-							<option value="-1"></option>
+							<option value="-1">[filtres prédéfinis]</option>
 							<?php
 							$t_source_query_id = isset( $t_filter['_source_query_id'] ) ? (int)$t_filter['_source_query_id'] : -1;
 							foreach( $t_stored_queries_arr as $t_query_id => $t_query_name ) {
