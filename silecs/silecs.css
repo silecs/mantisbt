@@ -6,6 +6,10 @@ pre {
 	overflow-x: auto;
 }
 
+table blockquote {
+    font-size: 15px;
+}
+
 .footer,
 #powered-by-mantisbt-logo {
 	display: none;
