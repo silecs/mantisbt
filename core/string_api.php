@@ -657,6 +657,10 @@ function string_get_bug_page( $p_action ) {
  * @return string
  */
 function string_get_bug_view_link( $p_bug_id, $p_detail_info = true, $p_fqdn = false ) {
+	static $enum_status = null;
+	if ($enum_status === null) {
+		$enum_status = MantisEnum::getAssocArrayIndexedByValues( config_get( 'status_enum_string' ) );
+	}
 	if( bug_exists( $p_bug_id ) ) {
 		$t_link = '<a href="';
 		if( $p_fqdn ) {
@@ -671,9 +675,13 @@ function string_get_bug_view_link( $p_bug_id, $p_detail_info = true, $p_fqdn = f
 			$t_status = string_attribute( get_enum_element( 'status', bug_get_field( $p_bug_id, 'status' ), $t_project_id ) );
 			$t_link .= ' title="[' . $t_status . '] ' . $t_summary . '"';
 
-			$t_resolved = bug_get_field( $p_bug_id, 'status' ) >= config_get( 'bug_resolved_status_threshold', null, null, $t_project_id );
-			if( $t_resolved ) {
-				$t_link .= ' class="resolved"';
+			$status = bug_get_field( $p_bug_id, 'status' );
+			$class = $enum_status[$status] ?? '';
+			if ($status >= config_get( 'bug_resolved_status_threshold', null, null, $t_project_id )) {
+				$class .= " resolved";
+			}
+			if ($class) {
+				$t_link .= " class=\"status-$class\"";
 			}
 		}
 		$t_link .= '>' . bug_format_id( $p_bug_id ) . '</a>';
