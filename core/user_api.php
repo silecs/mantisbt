@@ -1557,7 +1557,7 @@ function user_get_unassigned_by_project_id( $p_project_id = null ) {
 					u.enabled = ' . db_param() . ' AND
 					p.user_id IS NULL
 				ORDER BY u.realname, u.username';
-	$t_result = db_query( $t_query, array( $p_project_id, $t_adm, true ) );
+	$t_result = db_query( $t_query, array( $p_project_id, $t_adm + 1, true ) );
 	$t_display = array();
 	$t_sort = array();
 	$t_users = array();
