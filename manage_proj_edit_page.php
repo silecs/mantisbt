@@ -542,6 +542,8 @@ print_manage_menu( 'manage_proj_edit_page.php' );
 <!-- VERSIONS -->
 <div class="col-md-12 col-xs-12">
 <div class="space-10"></div>
+<details>
+	<summary>▶ Versions</summary>
 <div id="versions" class="form-container">
 	<div class="widget-box widget-color-blue2">
 		<div class="widget-header widget-header-small">
@@ -656,6 +658,7 @@ print_manage_menu( 'manage_proj_edit_page.php' );
 	</div>
 	</div>
 </div>
+</details>
 </div>
 
 <!-- CUSTOM FIELDS -->
