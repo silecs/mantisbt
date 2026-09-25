@@ -589,6 +589,7 @@ if( $t_show_attachments ) {
 					  class="form-control" <?php echo helper_get_tab_index() ?>
 					  cols="80" rows="10"
 					  maxlength="<?php echo $t_max_length ?>"
+					  placeholder="<?php echo config_get_global("bug_report_description_placeholder") ?>"
 			>
 <?php echo string_textarea( $f_description ) ?>
 </textarea>
@@ -624,6 +625,7 @@ if( $t_show_attachments ) {
 					  class="form-control" <?php echo helper_get_tab_index() ?>
 					  cols="80" rows="10"
 					  maxlength="<?php echo $t_max_length ?>"
+					  placeholder="<?php echo config_get_global("bug_report_additional_placeholder") ?>"
 			>
 <?php echo string_textarea( $f_additional_info ) ?>
 </textarea>
