@@ -27,7 +27,7 @@ $t_mantisgraph->print_submenu();
 			<div class="widget-header widget-header-small">
 				<h4 class="widget-title lighter">
 					<?php print_icon( 'fa-bar-chart', 'ace-icon' ); ?>
-					Temps de développement mensuel
+					Temps de développement mensuel, en minutes
 				</h4>
 			</div>
 <?php

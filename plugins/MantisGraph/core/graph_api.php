@@ -627,7 +627,7 @@ function graph_bymonth( array $p_metrics ) {
 	$t_json_labels = json_encode( array_keys( $p_metrics ) );
 	$t_json_values = json_encode( array_values( $p_metrics ) );
 ?>
-	<canvas class="by-month"
+	<canvas id="barchart-minutes-by-month" class="by-month"
 		width="1000" height="400"
 		data-labels="<?= htmlspecialchars( $t_json_labels, ENT_QUOTES ) ?>"
 		data-values="<?= htmlspecialchars( $t_json_values, ENT_QUOTES ) ?>">
